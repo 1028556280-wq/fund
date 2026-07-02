@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>天天向上专用——基金收益计算器</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(145deg, #e8f0fe 0%, #d4e4f7 40%, #f0eefe 70%, #faf5ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(74, 144, 217, 0.12), 0 8px 24px rgba(74, 144, 217, 0.06);
+            padding: 16px 14px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f4fe;
+        }
+
+        .header .brand {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #f6b83d;
+            text-transform: uppercase;
+            margin-bottom: 0;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1a2634;
+            letter-spacing: 0.5px;
+            margin-bottom: 0;
+        }
+
+        .header .dev-credit {
+            font-size: 11px;
+            color: #aabbcc;
+            margin-top: 2px;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #8a9bb5;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #f0f4fe;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            background: #f5f8fe;
+            border-radius: 12px;
+            padding: 0 12px 0 14px;
+            border: 2px solid transparent;
+            transition: border-color 0.25s, background 0.25s;
+            width: 100%;
+        }
+
+        .input-group:focus-within {
+            border-color: #f6b83d;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(246, 184, 61, 0.08);
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #3d4e66;
+            width: 72px;
+            flex-shrink: 0;
+            letter-spacing: 0.3px;
+        }
+
+        .input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 8px 4px 8px 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a2634;
+            outline: none;
+            font-variant-numeric: tabular-nums;
+            min-width: 0;
+        }
+
+        .input-group input::placeholder {
+            color: #b8c5d4;
+            font-weight: 400;
+        }
+
+        .input-group .fund-code-input {
+            flex: 0 0 80px;
+            min-width: 60px;
+        }
+
+        .input-group .fund-name {
+            font-size: 12px;
+            color: #f6b83d;
+            margin-left: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 40px;
+            font-weight: 600;
+        }
+
+        .input-group .fund-name.error {
+            color: #f28b82;
+        }
+
+        .input-group .fund-name.loading {
+            color: #8a9bb5;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0 10px 0;
+        }
+
+        .btn-fetch {
+            flex: 1;
+            padding: 8px 4px;
+            border: none;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-fetch:active {
+            transform: scale(0.97);
+        }
+
+        .btn-fetch.history {
+            background: linear-gradient(135deg, #f6b83d, #f5a623);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(246, 184, 61, 0.25);
+        }
+
+        .btn-fetch.latest {
+            background: linear-gradient(135deg, #4A90D9, #357abd);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(74, 144, 217, 0.25);
+        }
+
+        .btn-fetch:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-msg {
+            font-size: 11px;
+            color: #8a9bb5;
+            text-align: center;
+            min-height: 18px;
+            margin: 0 0 8px 0;
+            letter-spacing: 0.3px;
+        }
+
+        .status-msg.success {
+            color: #34a853;
+        }
+        .status-msg.error {
+            color: #f28b82;
+        }
+        .status-msg.warning {
+            color: #f6b83d;
+        }
+
+        .net-input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            background: #f5f8fe;
+            border-radius: 10px;
+            padding: 0 12px 0 14px;
+            border: 2px solid transparent;
+            transition: border-color 0.25s, background 0.25s;
+            width: 100%;
+        }
+
+        .net-input-group:focus-within {
+            border-color: #f6b83d;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(246, 184, 61, 0.06);
+        }
+
+        .net-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #3d4e66;
+            width: 72px;
+            flex-shrink: 0;
+        }
+
+        .net-input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 7px 4px 7px 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a2634;
+            outline: none;
+            font-variant-numeric: tabular-nums;
+            min-width: 0;
+        }
+
+        .net-input-group input::placeholder {
+            color: #b8c5d4;
+        }
+
+        .net-input-group.highlight-success {
+            border-color: #34a853;
+            background: #e8f5e9;
+            box-shadow: 0 0 0 4px rgba(52, 168, 83, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .result-area {
+            margin-top: 10px;
+            background: #f8fafe;
+            border-radius: 14px;
+            padding: 10px 12px 12px;
+            border: 2px solid #eef2f9;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2px 0;
+        }
+
+        .result-item .label {
+            font-size: 12px;
+            color: #5a6e8a;
+            font-weight: 600;
+        }
+
+        .result-item .value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a2634;
+            background: #eef2f9;
+            padding: 0 14px;
+            border-radius: 18px;
+            min-width: 64px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            line-height: 28px;
+        }
+
+        .result-item .value.positive {
+            color: #34a853;
+            background: #e6f4ea;
+        }
+        .result-item .value.negative {
+            color: #ea4335;
+            background: #fce8e6;
+        }
+
+        .final-row {
+            margin-top: 6px;
+            padding-top: 8px;
+            border-top: 2px solid #eef2f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .final-row .label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #f6b83d;
+            letter-spacing: 0.3px;
+        }
+
+        .final-row .value {
+            font-size: 22px;
+            font-weight: 800;
+            padding: 0 16px;
+            border-radius: 28px;
+            min-width: 76px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            line-height: 38px;
+            background: #fef8ed;
+            border: 2px solid #f6b83d;
+            color: #f6b83d;
+        }
+
+        .final-row .value.positive {
+            color: #34a853;
+            border-color: #34a853;
+            background: #e6f4ea;
+        }
+
+        .final-row .value.negative {
+            color: #ea4335;
+            border-color: #ea4335;
+            background: #fce8e6;
+        }
+
+        .final-row .value.zero {
+            color: #b8c5d4;
+            border-color: #e0e6ef;
+            background: #f5f7fa;
+        }
+
+        .save-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-save,
+        .btn-view-history {
+            flex: 1;
+            padding: 10px 6px;
+            border: none;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+            min-width: 80px;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #34a853, #2d8e47);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(52, 168, 83, 0.25);
+        }
+
+        .btn-save:active {
+            transform: scale(0.97);
+        }
+
+        .btn-view-history {
+            background: linear-gradient(135deg, #4A90D9, #357abd);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(74, 144, 217, 0.25);
+        }
+
+        .btn-view-history:active {
+            transform: scale(0.97);
+        }
+
+        .history-count {
+            font-size: 12px;
+            color: #5a6e8a;
+            background: #f0f2f5;
+            padding: 6px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .hint {
+            font-size: 10px;
+            color: #b8c5d4;
+            text-align: center;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .empty-value {
+            color: #b8c5d4 !important;
+            background: #f0f2f5 !important;
+        }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #ffffff;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            color: #1a2634;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #8a9bb5;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+
+        .modal-close:hover {
+            color: #1a2634;
+        }
+
+        /* 筛选控件 */
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eef2f9;
+            align-items: center;
+        }
+
+        .filter-section label {
+            font-size: 11px;
+            color: #5a6e8a;
+            font-weight: 600;
+        }
+
+        .filter-section select,
+        .filter-section input {
+            padding: 4px 6px;
+            border-radius: 8px;
+            border: 1px solid #dce2ea;
+            font-size: 12px;
+            background: #fafbfc;
+            outline: none;
+        }
+
+        .filter-section select:focus,
+        .filter-section input:focus {
+            border-color: #4A90D9;
+        }
+
+        .filter-section .filter-btn {
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: none;
+            background: #4A90D9;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .filter-section .filter-btn:active {
+            transform: scale(0.95);
+        }
+
+        .col-control {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eef2f9;
+        }
+
+        .col-control .col-toggle {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #eef2f9;
+            color: #5a6e8a;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .col-control .col-toggle.active {
+            background: #4A90D9;
+            color: #ffffff;
+            border-color: #4A90D9;
+        }
+
+        .col-control .col-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex: 1;
+            position: relative;
+        }
+
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .modal-body th {
+            background: #f0f4fe;
+            padding: 6px 4px;
+            text-align: left;
+            font-weight: 600;
+            color: #3d4e66;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            white-space: nowrap;
+        }
+
+        .modal-body .total-row {
+            background: #fff3cd;
+            font-weight: 700;
+        }
+
+        .modal-body .total-row td {
+            padding: 6px 4px;
+            border-bottom: 2px solid #f6b83d;
+            color: #1a2634;
+        }
+
+        .modal-body td {
+            padding: 5px 4px;
+            border-bottom: 1px solid #eef2f9;
+            color: #1a2634;
+            vertical-align: middle;
+        }
+
+        .modal-body .empty-msg {
+            text-align: center;
+            color: #b8c5d4;
+            padding: 30px 0;
+        }
+
+        .modal-body .del-btn {
+            background: none;
+            border: none;
+            color: #f28b82;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+        }
+
+        .modal-body .del-btn:active {
+            transform: scale(0.85);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #eef2f9;
+        }
+
+        .btn-clear-history,
+        .btn-export-excel {
+            flex: 1;
+            padding: 10px 6px;
+            border: none;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-clear-history {
+            background: #fce8e6;
+            color: #ea4335;
+        }
+
+        .btn-clear-history:active {
+            transform: scale(0.97);
+        }
+
+        .btn-export-excel {
+            background: #34a853;
+            color: #ffffff;
+        }
+
+        .btn-export-excel:active {
+            transform: scale(0.97);
+        }
+
+        @media (max-width: 440px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                padding: 12px 10px 16px;
+                border-radius: 20px;
+            }
+            .header h1 {
+                font-size: 16px;
+            }
+            .header .brand {
+                font-size: 9px;
+            }
+            .section-title {
+                font-size: 9px;
+            }
+            .input-group {
+                padding: 0 8px 0 10px;
+                border-radius: 10px;
+                margin-bottom: 4px;
+            }
+            .input-group label {
+                font-size: 11px;
+                width: 60px;
+            }
+            .input-group input {
+                font-size: 13px;
+                padding: 6px 2px 6px 4px;
+            }
+            .input-group .fund-code-input {
+                flex: 0 0 66px;
+                min-width: 50px;
+            }
+            .input-group .fund-name {
+                font-size: 11px;
+            }
+            .net-input-group {
+                padding: 0 8px 0 10px;
+                border-radius: 8px;
+                margin-bottom: 3px;
+            }
+            .net-input-group label {
+                font-size: 11px;
+                width: 60px;
+            }
+            .net-input-group input {
+                font-size: 13px;
+                padding: 5px 2px 5px 4px;
+            }
+            .btn-group {
+                margin: 6px 0 8px 0;
+                gap: 4px;
+            }
+            .btn-fetch {
+                font-size: 11px;
+                padding: 6px 2px;
+                border-radius: 10px;
+            }
+            .status-msg {
+                font-size: 10px;
+                min-height: 16px;
+                margin-bottom: 4px;
+            }
+            .result-area {
+                padding: 8px 10px 10px;
+                margin-top: 8px;
+                border-radius: 12px;
+            }
+            .result-item .value {
+                font-size: 14px;
+                min-width: 56px;
+                line-height: 26px;
+                padding: 0 10px;
+            }
+            .final-row .value {
+                font-size: 20px;
+                min-width: 66px;
+                line-height: 34px;
+                padding: 0 12px;
+            }
+            .final-row .label {
+                font-size: 12px;
+            }
+            .save-section {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .btn-save,
+            .btn-view-history {
+                font-size: 12px;
+                padding: 8px 4px;
+                flex: 1 1 45%;
+            }
+            .history-count {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+            .hint {
+                font-size: 9px;
+                margin-top: 6px;
+            }
+            .modal {
+                padding: 16px 12px;
+                max-height: 75vh;
+            }
+            .modal-body table {
+                font-size: 10px;
+            }
+            .modal-body th,
+            .modal-body td {
+                padding: 4px 2px;
+            }
+            .col-control .col-toggle {
+                font-size: 9px;
+                padding: 1px 6px;
+            }
+            .filter-section label {
+                font-size: 10px;
+            }
+            .filter-section select,
+            .filter-section input {
+                font-size: 10px;
+                padding: 2px 4px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .input-group label {
+                width: 50px;
+                font-size: 10px;
+            }
+            .input-group input {
+                font-size: 12px;
+            }
+            .net-input-group label {
+                width: 50px;
+                font-size: 10px;
+            }
+            .net-input-group input {
+                font-size: 12px;
+            }
+            .input-group .fund-code-input {
+                flex: 0 0 56px;
+                min-width: 44px;
+            }
+            .final-row .value {
+                font-size: 18px;
+                min-width: 58px;
+                line-height: 30px;
+                padding: 0 10px;
+            }
+            .header h1 {
+                font-size: 14px;
+            }
+            .btn-save,
+            .btn-view-history {
+                font-size: 10px;
+                padding: 6px 2px;
+            }
+            .modal-body table {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- ===== 头部 ===== -->
+        <div class="header">
+            <div class="brand">⚡ 天天向上 · 专属</div>
+            <h1>基金收益计算器</h1>
+            <div class="dev-credit">开发者 —— 小小</div>
+        </div>
+
+        <div class="section-title">📋 参数设置</div>
+
+        <div class="input-group">
+            <label>金额(元)</label>
+            <input type="number" id="amount" placeholder="20000" step="any">
+        </div>
+        <div class="input-group">
+            <label>红包(千分之)</label>
+            <input type="number" id="bonusRate" placeholder="0.8" step="any">
+        </div>
+        <div class="input-group">
+            <label>基金代码</label>
+            <input type="text" id="fundCode" placeholder="110022" class="fund-code-input">
+            <span id="fundNameDisplay" class="fund-name">—</span>
+        </div>
+
+        <!-- 买入日期 + 卖出日期 -->
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
+            <div class="input-group" style="flex:1; margin-bottom:0;">
+                <label>买入日期</label>
+                <input type="date" id="buyDate" style="flex:1;">
+            </div>
+            <div class="input-group" style="flex:1; margin-bottom:0;">
+                <label>卖出日期</label>
+                <input type="date" id="sellDate" style="flex:1;">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-fetch history" id="fetchHistoryBtn">📅 历史净值 → 买入</button>
+            <button class="btn-fetch latest" id="fetchLatestBtn">📥 最新净值 → 卖出</button>
+        </div>
+
+        <div id="statusMsg" class="status-msg">💡 修改日期或基金代码自动获取净值</div>
+
+        <!-- 净值输入区域 -->
+        <div class="net-input-group" id="buyGroup">
+            <label>买入净值</label>
+            <input type="number" id="buyPrice" placeholder="1.2888" step="any">
+        </div>
+        <div class="net-input-group" id="sellGroup">
+            <label>卖出净值</label>
+            <input type="number" id="sellPrice" placeholder="1.2762" step="any">
+        </div>
+        <div class="net-input-group">
+            <label>分红净值</label>
+            <input type="number" id="dividendPrice" placeholder="0" step="any">
+        </div>
+
+        <!-- 交易对象 -->
+        <div class="net-input-group">
+            <label>交易对象</label>
+            <input type="text" id="tradeTarget" placeholder="输入交易对象" inputmode="text" lang="zh-CN">
+        </div>
+
+        <div class="result-area">
+            <div class="result-item">
+                <span class="label">📌 净收益（不含红包）</span>
+                <span class="value" id="netProfit">—</span>
+            </div>
+            <div class="final-row">
+                <span class="label">💰 结算（收包时，负数为转出）</span>
+                <span class="value" id="finalResult">—</span>
+            </div>
+        </div>
+
+        <div class="save-section">
+            <button class="btn-save" id="saveHistoryBtn">💾 保存记录</button>
+            <button class="btn-view-history" id="viewHistoryBtn">📋 查看记录</button>
+            <span class="history-count" id="historyCount">📂 0 条</span>
+        </div>
+
+        <div class="hint">所有输入自动计算 · 数据保存在本地</div>
+    </div>
+
+    <!-- 历史记录弹窗 -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📋 历史记录</h3>
+                <button class="modal-close" id="modalCloseBtn">✕</button>
+            </div>
+            <!-- 筛选控件（仅保留买入日期/卖出日期） -->
+            <div class="filter-section" id="filterSection">
+                <label>筛选字段：</label>
+                <select id="filterField">
+                    <option value="buyDate" selected>买入日期</option>
+                    <option value="sellDate">卖出日期</option>
+                </select>
+                <label>方式：</label>
+                <select id="filterType">
+                    <option value="all">全部</option>
+                    <option value="year">按年</option>
+                    <option value="yearmonth">按年月</option>
+                </select>
+                <input type="number" id="filterYear" placeholder="2026" style="width:70px; display:none;" min="2000" max="2100">
+                <input type="month" id="filterMonth" style="width:120px; display:none;">
+                <button class="filter-btn" id="filterApplyBtn">应用</button>
+                <button class="filter-btn" id="filterResetBtn" style="background:#8a9bb5;">重置</button>
+            </div>
+            <!-- 列控制 -->
+            <div class="col-control" id="colControl"></div>
+            <div class="modal-body" id="modalBody">
+                <div class="empty-msg">暂无记录</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-export-excel" id="modalExportBtn">📥 导出 Excel</button>
+                <button class="btn-clear-history" id="modalClearBtn">🗑️ 清空全部</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 存储键
+        // ============================================================
+        const STORAGE_KEY = 'fund_calculator_data';
+        const HISTORY_KEY = 'fund_history_records';
+
+        // ============================================================
+        // 列可见性配置
+        // ============================================================
+        const COLUMNS = [
+            { key: 'index', label: '#' },
+            { key: 'timestamp', label: '时间' },
+            { key: 'amount', label: '金额' },
+            { key: 'bonusRate', label: '红包' },
+            { key: 'fundCode', label: '基金代码' },
+            { key: 'fundName', label: '基金名称' },
+            { key: 'buyDate', label: '买入日期' },
+            { key: 'buyPrice', label: '买入净值' },
+            { key: 'sellDate', label: '卖出日期' },
+            { key: 'sellPrice', label: '卖出净值' },
+            { key: 'dividendPrice', label: '分红净值' },
+            { key: 'tradeTarget', label: '交易对象' },
+            { key: 'netProfit', label: '净收益' },
+            { key: 'finalResult', label: '结算' }
+        ];
+        let visibleColumns = {};
+        COLUMNS.forEach(col => visibleColumns[col.key] = true);
+
+        // 当前筛选条件
+        let currentFilter = { field: 'buyDate', type: 'all', year: '', month: '' };
+
+        // ============================================================
+        // 历史记录管理
+        // ============================================================
+        let historyRecords = [];
+
+        function loadHistory() {
+            try {
+                const stored = localStorage.getItem(HISTORY_KEY);
+                historyRecords = stored ? JSON.parse(stored) : [];
+                if (!Array.isArray(historyRecords)) historyRecords = [];
+            } catch (e) { historyRecords = []; }
+            updateHistoryCount();
+        }
+
+        function saveHistoryToStorage() {
+            try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(historyRecords));
+            } catch (e) { /* ignore */ }
+            updateHistoryCount();
+        }
+
+        function updateHistoryCount() {
+            document.getElementById('historyCount').textContent = `📂 ${historyRecords.length} 条`;
+        }
+
+        // ============================================================
+        // 获取当前页面数据
+        // ============================================================
+        function getCurrentRecord() {
+            const amount = document.getElementById('amount').value || '';
+            const bonusRate = document.getElementById('bonusRate').value || '';
+            const fundCode = document.getElementById('fundCode').value.trim() || '';
+            const fundNameEl = document.getElementById('fundNameDisplay');
+            let fundName = fundNameEl.textContent || '';
+            if (fundName === '—' || fundName === '⏳ 查询...' || fundName === '❌ 查询失败') fundName = '';
+            const buyDate = document.getElementById('buyDate').value || '';
+            const sellDate = document.getElementById('sellDate').value || '';
+            const buyPrice = document.getElementById('buyPrice').value || '';
+            const sellPrice = document.getElementById('sellPrice').value || '';
+            const dividendPrice = document.getElementById('dividendPrice').value || '';
+            const tradeTarget = document.getElementById('tradeTarget').value || '';
+            const netProfit = document.getElementById('netProfit').textContent || '—';
+            const finalResult = document.getElementById('finalResult').textContent || '—';
+            const now = new Date();
+            const timestamp = now.toLocaleString('zh-CN', { hour12: false });
+            return { timestamp, amount, bonusRate, fundCode, fundName, buyDate, sellDate, buyPrice, sellPrice,
+                dividendPrice, tradeTarget, netProfit, finalResult };
+        }
+
+        // ============================================================
+        // 导出 Excel
+        // ============================================================
+        function exportToExcel(records) {
+            if (!records || records.length === 0) {
+                alert('暂无记录可导出');
+                return;
+            }
+            const data = records.map((r, index) => ({
+                '序号': index + 1,
+                '时间': r.timestamp || '',
+                '金额(元)': r.amount || '',
+                '红包(千分之)': r.bonusRate || '',
+                '基金代码': r.fundCode || '',
+                '基金名称': r.fundName || '',
+                '买入日期': r.buyDate || '',
+                '买入净值': r.buyPrice || '',
+                '卖出日期': r.sellDate || '',
+                '卖出净值': r.sellPrice || '',
+                '分红净值': r.dividendPrice || '',
+                '交易对象': r.tradeTarget || '',
+                '净收益(不含红包)': r.netProfit || '',
+                '结算(收包时，负数为转出)': r.finalResult || ''
+            }));
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(data);
+            ws['!cols'] = [
+                { wch: 6 }, { wch: 20 }, { wch: 12 }, { wch: 14 },
+                { wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 12 },
+                { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 14 },
+                { wch: 18 }, { wch: 28 }
+            ];
+            XLSX.utils.book_append_sheet(wb, ws, '历史记录');
+
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '基金计算历史记录.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+
+        // ============================================================
+        // 保存记录
+        // ============================================================
+        function saveCurrentRecord() {
+            const record = getCurrentRecord();
+            historyRecords.push(record);
+            saveHistoryToStorage();
+            setStatus(`✅ 已保存第 ${historyRecords.length} 条记录`, 'success');
+        }
+
+        // ============================================================
+        // 删除单条记录
+        // ============================================================
+        function deleteRecord(index) {
+            if (index < 0 || index >= historyRecords.length) return;
+            if (!confirm(`确定要删除第 ${index + 1} 条记录吗？`)) return;
+            historyRecords.splice(index, 1);
+            saveHistoryToStorage();
+            if (document.getElementById('historyModal').classList.contains('active')) {
+                renderHistoryModal();
+            }
+            setStatus(`🗑️ 已删除记录，剩余 ${historyRecords.length} 条`, 'warning');
+        }
+
+        // ============================================================
+        // 筛选函数（仅买入日期/卖出日期）
+        // ============================================================
+        function filterRecords(records) {
+            const field = currentFilter.field;
+            const type = currentFilter.type;
+            if (type === 'all') return records;
+
+            return records.filter(r => {
+                let value = '';
+                if (field === 'buyDate') {
+                    value = r.buyDate || '';
+                } else if (field === 'sellDate') {
+                    value = r.sellDate || '';
+                }
+                if (!value) return false;
+
+                if (type === 'year') {
+                    const year = value.slice(0, 4);
+                    return year === currentFilter.year;
+                } else if (type === 'yearmonth') {
+                    const ym = value.slice(0, 7);
+                    return ym === currentFilter.month;
+                }
+                return true;
+            });
+        }
+
+        // ============================================================
+        // 计算合计
+        // ============================================================
+        function calculateTotals(records) {
+            let netSum = 0,
+                finalSum = 0;
+            records.forEach(r => {
+                const n = parseFloat(r.netProfit);
+                if (!isNaN(n)) netSum += n;
+                const f = parseFloat(r.finalResult);
+                if (!isNaN(f)) finalSum += f;
+            });
+            return { netSum, finalSum };
+        }
+
+        // ============================================================
+        // 弹窗渲染（含合计行、筛选、列控制）
+        // ============================================================
+        function renderHistoryModal() {
+            const body = document.getElementById('modalBody');
+            const filtered = filterRecords(historyRecords);
+            const totals = calculateTotals(filtered);
+
+            if (filtered.length === 0) {
+                body.innerHTML = '<div class="empty-msg">暂无记录</div>';
+                return;
+            }
+
+            let headerHtml = '<tr>';
+            COLUMNS.forEach(col => {
+                if (visibleColumns[col.key]) {
+                    headerHtml += `<th>${col.label}</th>`;
+                }
+            });
+            headerHtml += '<th style="width:30px;text-align:center;">操作</th></tr>';
+
+            // 合计行
+            let totalHtml = '<tr class="total-row">';
+            COLUMNS.forEach(col => {
+                if (visibleColumns[col.key]) {
+                    if (col.key === 'netProfit') {
+                        totalHtml +=
+                            `<td style="text-align:center;font-weight:700;color:#34a853;">${totals.netSum.toFixed(2)}</td>`;
+                    } else if (col.key === 'finalResult') {
+                        totalHtml +=
+                            `<td style="text-align:center;font-weight:700;color:#34a853;">${totals.finalSum.toFixed(2)}</td>`;
+                    } else if (col.key === 'index') {
+                        totalHtml += `<td style="text-align:center;">合计</td>`;
+                    } else {
+                        totalHtml += `<td></td>`;
+                    }
+                }
+            });
+            totalHtml += '<td></td></tr>';
+
+            // 数据行
+            let rowsHtml = '';
+            const reversed = [...filtered].reverse();
+            reversed.forEach((r, idx) => {
+                const realIndex = historyRecords.indexOf(r);
+                rowsHtml += '<tr>';
+                COLUMNS.forEach(col => {
+                    if (visibleColumns[col.key]) {
+                        let val = r[col.key] !== undefined ? r[col.key] : '';
+                        if (col.key === 'index') val = realIndex + 1;
+                        if (col.key === 'netProfit' || col.key === 'finalResult') {
+                            const num = parseFloat(val);
+                            if (!isNaN(num)) {
+                                const cls = num > 0 ? 'positive' : (num < 0 ? 'negative' : '');
+                                val = `<span class="${cls}" style="font-weight:600;">${val}</span>`;
+                            }
+                        }
+                        rowsHtml += `<td>${val}</td>`;
+                    }
+                });
+                rowsHtml +=
+                    `<td style="text-align:center;"><button class="del-btn" data-index="${realIndex}" title="删除">🗑️</button></td>`;
+                rowsHtml += '</tr>';
+            });
+
+            body.innerHTML = `<table>
+            <thead>${headerHtml}</thead>
+            <tbody>
+                ${totalHtml}
+                ${rowsHtml}
+            </tbody>
+        </table>`;
+
+            body.querySelectorAll('.del-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const idx = parseInt(this.dataset.index);
+                    deleteRecord(idx);
+                });
+            });
+        }
+
+        // ============================================================
+        // 列控制渲染
+        // ============================================================
+        function renderColControls() {
+            const container = document.getElementById('colControl');
+            container.innerHTML = '';
+            COLUMNS.forEach(col => {
+                const span = document.createElement('span');
+                span.className = 'col-toggle' + (visibleColumns[col.key] ? ' active' : '');
+                span.textContent = col.label;
+                span.dataset.key = col.key;
+                span.addEventListener('click', function() {
+                    const key = this.dataset.key;
+                    visibleColumns[key] = !visibleColumns[key];
+                    renderColControls();
+                    renderHistoryModal();
+                });
+                container.appendChild(span);
+            });
+        }
+
+        // ============================================================
+        // 弹窗打开/关闭
+        // ============================================================
+        function openModal() {
+            // 重置筛选条件
+            currentFilter = { field: 'buyDate', type: 'all', year: '', month: '' };
+            document.getElementById('filterField').value = 'buyDate';
+            document.getElementById('filterType').value = 'all';
+            document.getElementById('filterYear').style.display = 'none';
+            document.getElementById('filterMonth').style.display = 'none';
+            document.getElementById('filterYear').value = '';
+            document.getElementById('filterMonth').value = '';
+
+            renderColControls();
+            renderHistoryModal();
+            document.getElementById('historyModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('historyModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ============================================================
+        // 筛选控件事件
+        // ============================================================
+        function setupFilterEvents() {
+            const filterField = document.getElementById('filterField');
+            const filterType = document.getElementById('filterType');
+            const filterYear = document.getElementById('filterYear');
+            const filterMonth = document.getElementById('filterMonth');
+
+            filterType.addEventListener('change', function() {
+                const val = this.value;
+                if (val === 'all') {
+                    filterYear.style.display = 'none';
+                    filterMonth.style.display = 'none';
+                } else if (val === 'year') {
+                    filterYear.style.display = 'inline-block';
+                    filterMonth.style.display = 'none';
+                } else if (val === 'yearmonth') {
+                    filterYear.style.display = 'none';
+                    filterMonth.style.display = 'inline-block';
+                }
+            });
+
+            document.getElementById('filterApplyBtn').addEventListener('click', function() {
+                const field = filterField.value;
+                const type = filterType.value;
+                if (type === 'all') {
+                    currentFilter = { field: field, type: 'all', year: '', month: '' };
+                } else if (type === 'year') {
+                    const year = filterYear.value.trim();
+                    if (!year || year.length !== 4 || isNaN(year)) {
+                        alert('请输入有效的年份（如2026）');
+                        return;
+                    }
+                    currentFilter = { field: field, type: 'year', year: year, month: '' };
+                } else if (type === 'yearmonth') {
+                    const month = filterMonth.value;
+                    if (!month) {
+                        alert('请选择年月');
+                        return;
+                    }
+                    currentFilter = { field: field, type: 'yearmonth', year: '', month: month };
+                }
+                renderHistoryModal();
+            });
+
+            document.getElementById('filterResetBtn').addEventListener('click', function() {
+                filterType.value = 'all';
+                filterYear.style.display = 'none';
+                filterMonth.style.display = 'none';
+                filterYear.value = '';
+                filterMonth.value = '';
+                currentFilter = { field: filterField.value, type: 'all', year: '', month: '' };
+                renderHistoryModal();
+            });
+        }
+
+        // ============================================================
+        // 净值获取核心（与之前相同）
+        // ============================================================
+        function fetchNetValueOnDate(fundCode, targetDate) {
+            return new Promise((resolve, reject) => {
+                const url =
+                    `https://fundf10.eastmoney.com/F10DataApi.aspx?type=lsjz&code=${fundCode}&page=1&per=1&sdate=${targetDate}&edate=${targetDate}`;
+                const script = document.createElement('script');
+                script.src = url;
+                let resolved = false;
+                const cleanup = () => { if (document.body.contains(script)) document.body.removeChild(script); };
+                const timer = setTimeout(() => {
+                    if (!resolved) { resolved = true;
+                        cleanup();
+                        reject(new Error('请求超时')); }
+                }, 10000);
+                script.onload = function() {
+                    if (resolved) return;
+                    resolved = true;
+                    clearTimeout(timer);
+                    try {
+                        const apidata = window.apidata;
+                        if (!apidata || !apidata.content) { cleanup();
+                            reject(new Error('数据为空')); return; }
+                        const content = apidata.content;
+                        if (content.includes('暂无数据')) { cleanup();
+                            reject(new Error('无数据')); return; }
+                        const rows = content.split('<tr>');
+                        for (const row of rows) {
+                            if (row.includes(`<td>${targetDate}</td>`)) {
+                                const cells = row.match(/<td[^>]*>(.*?)<\/td>/g);
+                                if (cells && cells.length >= 2) {
+                                    const valStr = cells[1].replace(/<[^>]+>/g, '').trim();
+                                    const val = parseFloat(valStr);
+                                    if (!isNaN(val)) { cleanup();
+                                        resolve(val); return; }
+                                }
+                            }
+                        }
+                        cleanup();
+                        reject(new Error('未找到净值'));
+                    } catch (e) { cleanup();
+                        reject(new Error('解析失败: ' + e.message)); }
+                };
+                script.onerror = function() {
+                    if (resolved) return;
+                    resolved = true;
+                    clearTimeout(timer);
+                    cleanup();
+                    reject(new Error('网络请求失败'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // ============================================================
+        // 获取并设置卖出净值（与买入完全一致：绿色高亮+状态）
+        // ============================================================
+        async function fetchAndSetSellPrice(fundCode, sellDate) {
+            const sellPriceInput = document.getElementById('sellPrice');
+            const sellGroup = document.getElementById('sellGroup');
+
+            if (!fundCode || !sellDate) {
+                sellPriceInput.value = '';
+                sellGroup.classList.remove('highlight-success');
+                calculate();
+                saveToLocalStorage();
+                setStatus('请填写基金代码和卖出日期', '');
+                return;
+            }
+
+            try {
+                const nav = await fetchNetValueOnDate(fundCode, sellDate);
+                sellPriceInput.value = nav;
+                sellGroup.classList.add('highlight-success');
+                setTimeout(() => sellGroup.classList.remove('highlight-success'), 2500);
+                setStatus(`✅ ${sellDate} 净值 ${nav} 已填入卖出净值`, 'success');
+                calculate();
+                saveToLocalStorage();
+            } catch (err) {
+                sellPriceInput.value = '';
+                sellGroup.classList.remove('highlight-success');
+                calculate();
+                saveToLocalStorage();
+                setStatus(`❌ ${sellDate} 无净值数据`, 'error');
+            }
+        }
+
+        let autoFetchSellTimer = null;
+
+        function autoFetchSellDebounced() {
+            clearTimeout(autoFetchSellTimer);
+            autoFetchSellTimer = setTimeout(() => {
+                const fundCode = document.getElementById('fundCode').value.trim();
+                const sellDate = document.getElementById('sellDate').value;
+                fetchAndSetSellPrice(fundCode, sellDate);
+            }, 500);
+        }
+
+        // ============================================================
+        // 计算函数
+        // ============================================================
+        function calculate() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const bonusRate = parseFloat(document.getElementById('bonusRate').value) || 0;
+            const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+            const dividendPrice = parseFloat(document.getElementById('dividendPrice').value) || 0;
+
+            const netSpan = document.getElementById('netProfit');
+            const finalSpan = document.getElementById('finalResult');
+
+            if (buyPrice <= 0 || sellPrice <= 0) {
+                netSpan.textContent = '—';
+                netSpan.className = 'value empty-value';
+                finalSpan.textContent = '—';
+                finalSpan.className = 'value zero';
+                return;
+            }
+
+            const netProfit = (amount / buyPrice) * (sellPrice + dividendPrice) - amount;
+            const finalResult = netProfit + (amount / 1000) * bonusRate;
+
+            function fmt(v) { return (isFinite(v) ? v.toFixed(2) : '—'); }
+
+            const netVal = fmt(netProfit);
+            netSpan.textContent = netVal;
+            netSpan.className = 'value' + (netProfit > 0 ? ' positive' : netProfit < 0 ? ' negative' : '');
+
+            const finalVal = fmt(finalResult);
+            finalSpan.textContent = finalVal;
+            finalSpan.className = 'value' + (finalResult > 0 ? ' positive' : finalResult < 0 ? ' negative' : ' zero');
+        }
+
+        // ============================================================
+        // 状态信息
+        // ============================================================
+        function setStatus(msg, type = '') {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.className = 'status-msg' + (type ? ' ' + type : '');
+        }
+
+        // ============================================================
+        // 本地存储
+        // ============================================================
+        function saveToLocalStorage() {
+            const data = {
+                amount: document.getElementById('amount').value,
+                bonusRate: document.getElementById('bonusRate').value,
+                fundCode: document.getElementById('fundCode').value,
+                buyPrice: document.getElementById('buyPrice').value,
+                sellPrice: document.getElementById('sellPrice').value,
+                dividendPrice: document.getElementById('dividendPrice').value,
+                tradeTarget: document.getElementById('tradeTarget').value,
+                sellDate: document.getElementById('sellDate').value
+            };
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+                if (data.amount !== undefined) document.getElementById('amount').value = data.amount;
+                if (data.bonusRate !== undefined) document.getElementById('bonusRate').value = data.bonusRate;
+                if (data.fundCode !== undefined) document.getElementById('fundCode').value = data.fundCode;
+                if (data.buyPrice !== undefined) document.getElementById('buyPrice').value = data.buyPrice;
+                if (data.sellPrice !== undefined) document.getElementById('sellPrice').value = data.sellPrice;
+                if (data.dividendPrice !== undefined) document.getElementById('dividendPrice').value = data.dividendPrice;
+                if (data.tradeTarget !== undefined) document.getElementById('tradeTarget').value = data.tradeTarget;
+                if (data.sellDate !== undefined) document.getElementById('sellDate').value = data.sellDate;
+                return true;
+            } catch (e) { return false; }
+        }
+
+        function setDateToSevenDaysAgo() {
+            const d = new Date();
+            d.setDate(d.getDate() - 7);
+            document.getElementById('buyDate').value =
+                `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function setSellDateToToday() {
+            const today = new Date();
+            document.getElementById('sellDate').value = today.toISOString().slice(0, 10);
+        }
+
+        let autoFetchBuyTimer = null;
+
+        function tryAutoFetchBuy() {
+            clearTimeout(autoFetchBuyTimer);
+            autoFetchBuyTimer = setTimeout(() => {
+                const fundCode = document.getElementById('fundCode').value.trim();
+                const date = document.getElementById('buyDate').value;
+                if (fundCode && date) autoFetchHistorical();
+                else if (!fundCode) setStatus('请输入基金代码', 'warning');
+                else if (!date) setStatus('请选择买入日期', 'warning');
+            }, 500);
+        }
+
+        let fundNameCache = {};
+        let searchTimer = null;
+
+        function fetchFundName(code) {
+            const display = document.getElementById('fundNameDisplay');
+            if (!code) { display.textContent = '—';
+                display.className = 'fund-name'; return; }
+            if (fundNameCache[code]) { display.textContent = fundNameCache[code];
+                display.className = 'fund-name'; return; }
+            display.textContent = '⏳ 查询...';
+            display.className = 'fund-name loading';
+            const callbackName = 'suggest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+            const url =
+                `https://fundsuggest.eastmoney.com/FundSearch/api/FundSearchAPI.ashx?m=1&key=${encodeURIComponent(code)}&callback=${callbackName}&_=${Date.now()}`;
+            window[callbackName] = function(data) {
+                let name = '未知基金';
+                if (data && data.Datas) {
+                    const found = data.Datas.find(d => String(d.CODE) === code);
+                    if (found) name = found.NAME || found.SHORTNAME || '未知基金';
+                }
+                fundNameCache[code] = name;
+                display.textContent = name;
+                display.className = 'fund-name' + (name === '未知基金' ? ' error' : '');
+                delete window[callbackName];
+            };
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = function() { display.textContent = '❌ 查询失败';
+                display.className = 'fund-name error';
+                delete window[callbackName]; };
+            document.head.appendChild(script);
+        }
+
+        document.getElementById('fundCode').addEventListener('input', function() {
+            clearTimeout(searchTimer);
+            const val = this.value.trim();
+            if (val.length < 4) { document.getElementById('fundNameDisplay').textContent = '—';
+                document.getElementById('fundNameDisplay').className = 'fund-name'; return; }
+            searchTimer = setTimeout(() => fetchFundName(val), 500);
+            tryAutoFetchBuy();
+            autoFetchSellDebounced();
+        });
+        document.getElementById('fundCode').addEventListener('blur', function() {
+            const val = this.value.trim();
+            if (val.length >= 4 && !fundNameCache[val]) fetchFundName(val);
+        });
+
+        // ============================================================
+        // 买入净值自动获取
+        // ============================================================
+        async function autoFetchHistorical() {
+            const fundCode = document.getElementById('fundCode').value.trim();
+            const date = document.getElementById('buyDate').value;
+            const buyGroup = document.getElementById('buyGroup');
+
+            if (!fundCode || !date) {
+                document.getElementById('buyPrice').value = '';
+                buyGroup.classList.remove('highlight-success');
+                calculate();
+                setStatus('请填写基金代码和买入日期', '');
+                return;
+            }
+
+            setStatus(`⏳ 获取 ${date} 净值...`);
+            try {
+                const nav = await fetchNetValueOnDate(fundCode, date);
+                document.getElementById('buyPrice').value = nav;
+                buyGroup.classList.add('highlight-success');
+                setTimeout(() => buyGroup.classList.remove('highlight-success'), 2500);
+                setStatus(`✅ ${date} 净值 ${nav} 已填入买入净值`, 'success');
+                calculate();
+                saveToLocalStorage();
+            } catch (err) {
+                document.getElementById('buyPrice').value = '';
+                buyGroup.classList.remove('highlight-success');
+                calculate();
+                saveToLocalStorage();
+                setStatus(`⚠️ ${date} 无净值数据`, 'warning');
+            }
+        }
+
+        // ============================================================
+        // 按钮事件
+        // ============================================================
+        const sellGroup = document.getElementById('sellGroup');
+
+        async function handleFetchLatest() {
+            const fundCode = document.getElementById('fundCode').value.trim();
+            if (!fundCode) { setStatus('❌ 请输入基金代码', 'error'); return; }
+            const today = new Date();
+            const todayStr = today.toISOString().slice(0, 10);
+            document.getElementById('sellDate').value = todayStr;
+            document.getElementById('fetchLatestBtn').disabled = true;
+            document.getElementById('fetchHistoryBtn').disabled = true;
+            try {
+                await fetchAndSetSellPrice(fundCode, todayStr);
+            } finally {
+                document.getElementById('fetchLatestBtn').disabled = false;
+                document.getElementById('fetchHistoryBtn').disabled = false;
+            }
+        }
+
+        async function handleFetchHistory() {
+            const fundCode = document.getElementById('fundCode').value.trim();
+            if (!fundCode) { setStatus('❌ 请输入基金代码', 'error'); return; }
+            const date = document.getElementById('buyDate').value;
+            if (!date) { setStatus('❌ 请选择买入日期', 'error'); return; }
+            document.getElementById('fetchLatestBtn').disabled = true;
+            document.getElementById('fetchHistoryBtn').disabled = true;
+            setStatus(`⏳ 获取 ${date} 净值...`);
+            const buyGroup = document.getElementById('buyGroup');
+            try {
+                const nav = await fetchNetValueOnDate(fundCode, date);
+                document.getElementById('buyPrice').value = nav;
+                buyGroup.classList.add('highlight-success');
+                setTimeout(() => buyGroup.classList.remove('highlight-success'), 2500);
+                setStatus(`✅ ${date} 净值 ${nav} 已填入买入净值`, 'success');
+                calculate();
+                saveToLocalStorage();
+            } catch (err) {
+                document.getElementById('buyPrice').value = '';
+                buyGroup.classList.remove('highlight-success');
+                calculate();
+                saveToLocalStorage();
+                setStatus('❌ ' + err.message, 'error');
+            } finally {
+                document.getElementById('fetchLatestBtn').disabled = false;
+                document.getElementById('fetchHistoryBtn').disabled = false;
+            }
+        }
+
+        document.getElementById('fetchLatestBtn').addEventListener('click', handleFetchLatest);
+        document.getElementById('fetchHistoryBtn').addEventListener('click', handleFetchHistory);
+
+        // ============================================================
+        // 绑定输入事件
+        // ============================================================
+        const inputIds = ['amount', 'bonusRate', 'buyPrice', 'sellPrice', 'dividendPrice'];
+        inputIds.forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                calculate();
+                saveToLocalStorage();
+            });
+        });
+
+        document.getElementById('tradeTarget').addEventListener('input', function() {
+            saveToLocalStorage();
+        });
+
+        document.getElementById('buyDate').addEventListener('change', function() {
+            calculate();
+            saveToLocalStorage();
+            tryAutoFetchBuy();
+        });
+        document.getElementById('buyDate').addEventListener('input', function() {
+            calculate();
+            saveToLocalStorage();
+        });
+
+        document.getElementById('sellDate').addEventListener('change', function() {
+            calculate();
+            saveToLocalStorage();
+            autoFetchSellDebounced();
+        });
+        document.getElementById('sellDate').addEventListener('input', function() {
+            calculate();
+            saveToLocalStorage();
+            autoFetchSellDebounced();
+        });
+
+        document.getElementById('buyDate').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById(
+                'fetchHistoryBtn').click(); });
+        document.getElementById('sellDate').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById(
+                'fetchLatestBtn').click(); });
+        document.getElementById('fundCode').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById(
+                'fetchLatestBtn').click(); });
+
+        // ============================================================
+        // 弹窗事件
+        // ============================================================
+        document.getElementById('viewHistoryBtn').addEventListener('click', openModal);
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('historyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.getElementById('modalExportBtn').addEventListener('click', function() {
+            exportToExcel(historyRecords);
+            setStatus(`✅ 已导出 ${historyRecords.length} 条记录`, 'success');
+        });
+
+        document.getElementById('modalClearBtn').addEventListener('click', function() {
+            if (confirm('确定要清空所有历史记录吗？此操作不可撤销！')) {
+                historyRecords = [];
+                saveHistoryToStorage();
+                renderHistoryModal();
+                setStatus('🗑️ 已清空所有历史记录', 'warning');
+                if (historyRecords.length === 0) {
+                    document.getElementById('modalBody').innerHTML = '<div class="empty-msg">暂无记录</div>';
+                }
+            }
+        });
+
+        document.getElementById('saveHistoryBtn').addEventListener('click', saveCurrentRecord);
+
+        // 初始化筛选控件
+        setupFilterEvents();
+
+        // ============================================================
+        // 初始化
+        // ============================================================
+        window.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            setDateToSevenDaysAgo();
+            setSellDateToToday();
+            loadHistory();
+            calculate();
+
+            const fundCode = document.getElementById('fundCode').value.trim();
+            if (fundCode.length >= 4) fetchFundName(fundCode);
+
+            if (fundCode && document.getElementById('buyDate').value) {
+                setTimeout(autoFetchHistorical, 600);
+            }
+
+            if (fundCode && document.getElementById('sellDate').value) {
+                setTimeout(autoFetchSellDebounced, 800);
+            }
+
+            setStatus('💡 修改日期或基金代码自动获取净值', '');
+        });
+    </script>
+</body>
+</html>
