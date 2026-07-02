@@ -7,6 +7,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
     </script>
     <style>
+        /* ===== 基础样式 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -33,6 +34,7 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
+        /* ===== 头部 ===== */
         .header {
             text-align: center;
             margin-bottom: 12px;
@@ -76,6 +78,7 @@
             border-bottom: 2px solid #f0f4fe;
         }
 
+        /* ===== 输入组 ===== */
         .input-group {
             display: flex;
             align-items: center;
@@ -141,11 +144,11 @@
         .input-group .fund-name.error {
             color: #f28b82;
         }
-
         .input-group .fund-name.loading {
             color: #8a9bb5;
         }
 
+        /* ===== 按钮 ===== */
         .btn-group {
             display: flex;
             gap: 6px;
@@ -186,6 +189,7 @@
             transform: none !important;
         }
 
+        /* ===== 状态消息 ===== */
         .status-msg {
             font-size: 11px;
             color: #8a9bb5;
@@ -205,6 +209,7 @@
             color: #f6b83d;
         }
 
+        /* ===== 净值输入组 ===== */
         .net-input-group {
             display: flex;
             align-items: center;
@@ -255,6 +260,7 @@
             transition: all 0.3s ease;
         }
 
+        /* ===== 结果区域 ===== */
         .result-area {
             margin-top: 10px;
             background: #f8fafe;
@@ -346,6 +352,7 @@
             background: #f5f7fa;
         }
 
+        /* ===== 保存区 ===== */
         .save-section {
             display: flex;
             align-items: center;
@@ -412,7 +419,7 @@
             background: #f0f2f5 !important;
         }
 
-        /* 弹窗样式 */
+        /* ===== 弹窗样式 ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -527,6 +534,7 @@
             transform: scale(0.95);
         }
 
+        /* 列控制 */
         .col-control {
             display: flex;
             flex-wrap: wrap;
@@ -660,6 +668,7 @@
             transform: scale(0.97);
         }
 
+        /* ===== 移动端适配 ===== */
         @media (max-width: 440px) {
             body {
                 padding: 8px;
@@ -838,32 +847,38 @@
 
         <div class="section-title">📋 参数设置</div>
 
+        <!-- 金额 -->
         <div class="input-group">
             <label>金额(元)</label>
             <input type="number" id="amount" placeholder="20000" step="any">
         </div>
+
+        <!-- 红包 -->
         <div class="input-group">
             <label>红包(千分之)</label>
             <input type="number" id="bonusRate" placeholder="0.8" step="any">
         </div>
+
+        <!-- 基金代码 -->
         <div class="input-group">
             <label>基金代码</label>
             <input type="text" id="fundCode" placeholder="110022" class="fund-code-input">
             <span id="fundNameDisplay" class="fund-name">—</span>
         </div>
 
-        <!-- 买入日期 + 卖出日期 -->
-        <div style="display:flex; gap:6px; margin-bottom:6px;">
-            <div class="input-group" style="flex:1; margin-bottom:0;">
-                <label>买入日期</label>
-                <input type="date" id="buyDate" style="flex:1;">
-            </div>
-            <div class="input-group" style="flex:1; margin-bottom:0;">
-                <label>卖出日期</label>
-                <input type="date" id="sellDate" style="flex:1;">
-            </div>
+        <!-- 买入日期（单独一行） -->
+        <div class="input-group">
+            <label>买入日期</label>
+            <input type="date" id="buyDate" style="flex:1;">
         </div>
 
+        <!-- 卖出日期（单独一行） -->
+        <div class="input-group">
+            <label>卖出日期</label>
+            <input type="date" id="sellDate" style="flex:1;">
+        </div>
+
+        <!-- 按钮 -->
         <div class="btn-group">
             <button class="btn-fetch history" id="fetchHistoryBtn">📅 历史净值 → 买入</button>
             <button class="btn-fetch latest" id="fetchLatestBtn">📥 最新净值 → 卖出</button>
@@ -871,7 +886,7 @@
 
         <div id="statusMsg" class="status-msg">💡 修改日期或基金代码自动获取净值</div>
 
-        <!-- 净值输入区域 -->
+        <!-- 净值输入 -->
         <div class="net-input-group" id="buyGroup">
             <label>买入净值</label>
             <input type="number" id="buyPrice" placeholder="1.2888" step="any">
@@ -891,6 +906,7 @@
             <input type="text" id="tradeTarget" placeholder="输入交易对象" inputmode="text" lang="zh-CN">
         </div>
 
+        <!-- 结果 -->
         <div class="result-area">
             <div class="result-item">
                 <span class="label">📌 净收益（不含红包）</span>
@@ -902,6 +918,7 @@
             </div>
         </div>
 
+        <!-- 保存区 -->
         <div class="save-section">
             <button class="btn-save" id="saveHistoryBtn">💾 保存记录</button>
             <button class="btn-view-history" id="viewHistoryBtn">📋 查看记录</button>
@@ -911,14 +928,14 @@
         <div class="hint">所有输入自动计算 · 数据保存在本地</div>
     </div>
 
-    <!-- 历史记录弹窗 -->
+    <!-- ===== 历史记录弹窗 ===== -->
     <div class="modal-overlay" id="historyModal">
         <div class="modal">
             <div class="modal-header">
                 <h3>📋 历史记录</h3>
                 <button class="modal-close" id="modalCloseBtn">✕</button>
             </div>
-            <!-- 筛选控件（仅保留买入日期/卖出日期） -->
+            <!-- 筛选控件 -->
             <div class="filter-section" id="filterSection">
                 <label>筛选字段：</label>
                 <select id="filterField">
