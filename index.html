@@ -7,13 +7,12 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
     </script>
     <style>
-        /* ===== 基础样式 ===== */
+        /* ===== 基础样式（与上一版完全相同，未做任何改动） ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
             background: linear-gradient(145deg, #e8f0fe 0%, #d4e4f7 40%, #f0eefe 70%, #faf5ff 100%);
@@ -23,80 +22,140 @@
             align-items: flex-start;
             padding: 10px;
         }
-
         .container {
             max-width: 480px;
             width: 100%;
             background: #ffffff;
             border-radius: 28px;
             box-shadow: 0 20px 60px rgba(74, 144, 217, 0.12), 0 8px 24px rgba(74, 144, 217, 0.06);
-            padding: 16px 14px 20px;
+            padding: 14px 12px 16px;
             border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
         }
-
-        /* ===== 头部 ===== */
         .header {
             text-align: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 2px solid #f0f4fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            position: relative;
         }
-
         .header .brand {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
             letter-spacing: 2px;
             color: #f6b83d;
             text-transform: uppercase;
             margin-bottom: 0;
+            width: 100%;
         }
-
+        .header .title-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
         .header h1 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
             color: #1a2634;
             letter-spacing: 0.5px;
             margin-bottom: 0;
+            display: inline-block;
         }
-
         .header .dev-credit {
-            font-size: 11px;
+            font-size: 10px;
             color: #aabbcc;
-            margin-top: 2px;
+            margin-top: 0;
             letter-spacing: 2px;
             font-weight: 300;
+            width: 100%;
+        }
+        .tutorial-btn-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4A90D9;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            line-height: 1;
+            padding: 0;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(74, 144, 217, 0.3);
+        }
+        .tutorial-btn-inline:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 16px rgba(74, 144, 217, 0.4);
+        }
+        .tutorial-btn-inline:active {
+            transform: scale(0.92);
+        }
+        .tutorial-btn-inline span {
+            display: inline-block;
+            margin-top: -1px;
         }
 
+        .alert-bar {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 0;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: transparent;
+            color: #c0392b;
+            min-height: 24px;
+            transition: all 0.2s;
+        }
+        .alert-bar.has-alert {
+            background: #fce8e6;
+            border: 1px solid #f5c6cb;
+            padding: 4px 8px;
+        }
+        .alert-bar.no-alert {
+            background: transparent;
+            border: none;
+            color: #8a9bb5;
+            font-weight: 400;
+            font-size: 11px;
+        }
         .section-title {
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 1px;
             text-transform: uppercase;
             color: #8a9bb5;
-            margin-bottom: 6px;
-            padding-bottom: 4px;
+            margin-bottom: 4px;
+            padding-bottom: 3px;
             border-bottom: 2px solid #f0f4fe;
         }
-
-        /* ===== 输入组 ===== */
         .input-group {
             display: flex;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             background: #f5f8fe;
             border-radius: 12px;
-            padding: 0 12px 0 14px;
+            padding: 0 10px 0 12px;
             border: 2px solid transparent;
             transition: border-color 0.25s, background 0.25s;
             width: 100%;
         }
-
         .input-group:focus-within {
             border-color: #f6b83d;
             background: #ffffff;
             box-shadow: 0 0 0 4px rgba(246, 184, 61, 0.08);
         }
-
         .input-group label {
             font-size: 12px;
             font-weight: 600;
@@ -105,12 +164,11 @@
             flex-shrink: 0;
             letter-spacing: 0.3px;
         }
-
         .input-group input {
             flex: 1;
             background: transparent;
             border: none;
-            padding: 8px 4px 8px 6px;
+            padding: 6px 4px 6px 6px;
             font-size: 14px;
             font-weight: 500;
             color: #1a2634;
@@ -118,17 +176,14 @@
             font-variant-numeric: tabular-nums;
             min-width: 0;
         }
-
         .input-group input::placeholder {
             color: #b8c5d4;
             font-weight: 400;
         }
-
         .input-group .fund-code-input {
             flex: 0 0 80px;
             min-width: 60px;
         }
-
         .input-group .fund-name {
             font-size: 12px;
             color: #f6b83d;
@@ -140,24 +195,101 @@
             min-width: 40px;
             font-weight: 600;
         }
-
         .input-group .fund-name.error {
             color: #f28b82;
         }
         .input-group .fund-name.loading {
             color: #8a9bb5;
         }
-
-        /* ===== 按钮 ===== */
+        .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: #f5f8fe;
+            border-radius: 12px;
+            padding: 4px 12px;
+            margin-bottom: 4px;
+            border: 2px solid transparent;
+            transition: border-color 0.25s, background 0.25s;
+            width: 100%;
+        }
+        .radio-group:focus-within {
+            border-color: #f6b83d;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(246, 184, 61, 0.08);
+        }
+        .radio-group .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #3d4e66;
+            cursor: pointer;
+            user-select: none;
+        }
+        .radio-group .radio-option input[type="radio"] {
+            display: none;
+        }
+        .radio-group .radio-option .custom-radio {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #b0bcca;
+            background: #fff;
+            display: inline-block;
+            position: relative;
+            flex-shrink: 0;
+            transition: border-color 0.2s;
+        }
+        .radio-group .radio-option input[type="radio"]:checked+.custom-radio {
+            border-color: #4A90D9;
+        }
+        .radio-group .radio-option input[type="radio"]:checked+.custom-radio::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4A90D9;
+        }
+        .auto-register-row {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        .btn-auto-register {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, #4A90D9, #357abd);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(74, 144, 217, 0.25);
+            min-width: 70px;
+        }
+        .btn-auto-register:active {
+            transform: scale(0.97);
+        }
+        .btn-auto-register:hover {
+            opacity: 0.9;
+        }
         .btn-group {
             display: flex;
             gap: 6px;
-            margin: 8px 0 10px 0;
+            margin: 6px 0 8px 0;
         }
-
         .btn-fetch {
             flex: 1;
-            padding: 8px 4px;
+            padding: 6px 4px;
             border: none;
             border-radius: 12px;
             font-size: 12px;
@@ -166,39 +298,32 @@
             transition: all 0.2s ease;
             letter-spacing: 0.3px;
         }
-
         .btn-fetch:active {
             transform: scale(0.97);
         }
-
         .btn-fetch.history {
             background: linear-gradient(135deg, #f6b83d, #f5a623);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(246, 184, 61, 0.25);
         }
-
         .btn-fetch.latest {
             background: linear-gradient(135deg, #4A90D9, #357abd);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(74, 144, 217, 0.25);
         }
-
         .btn-fetch:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none !important;
         }
-
-        /* ===== 状态消息 ===== */
         .status-msg {
             font-size: 11px;
             color: #8a9bb5;
             text-align: center;
-            min-height: 18px;
-            margin: 0 0 8px 0;
+            min-height: 16px;
+            margin: 0 0 6px 0;
             letter-spacing: 0.3px;
         }
-
         .status-msg.success {
             color: #34a853;
         }
@@ -208,26 +333,22 @@
         .status-msg.warning {
             color: #f6b83d;
         }
-
-        /* ===== 净值输入组 ===== */
         .net-input-group {
             display: flex;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             background: #f5f8fe;
             border-radius: 10px;
-            padding: 0 12px 0 14px;
+            padding: 0 10px 0 12px;
             border: 2px solid transparent;
             transition: border-color 0.25s, background 0.25s;
             width: 100%;
         }
-
         .net-input-group:focus-within {
             border-color: #f6b83d;
             background: #ffffff;
             box-shadow: 0 0 0 4px rgba(246, 184, 61, 0.06);
         }
-
         .net-input-group label {
             font-size: 12px;
             font-weight: 600;
@@ -235,12 +356,11 @@
             width: 72px;
             flex-shrink: 0;
         }
-
         .net-input-group input {
             flex: 1;
             background: transparent;
             border: none;
-            padding: 7px 4px 7px 6px;
+            padding: 5px 4px 5px 6px;
             font-size: 14px;
             font-weight: 500;
             color: #1a2634;
@@ -248,40 +368,33 @@
             font-variant-numeric: tabular-nums;
             min-width: 0;
         }
-
         .net-input-group input::placeholder {
             color: #b8c5d4;
         }
-
         .net-input-group.highlight-success {
             border-color: #34a853;
             background: #e8f5e9;
             box-shadow: 0 0 0 4px rgba(52, 168, 83, 0.15);
             transition: all 0.3s ease;
         }
-
-        /* ===== 结果区域 ===== */
         .result-area {
-            margin-top: 10px;
+            margin-top: 8px;
             background: #f8fafe;
             border-radius: 14px;
-            padding: 10px 12px 12px;
+            padding: 8px 12px 10px;
             border: 2px solid #eef2f9;
         }
-
         .result-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 2px 0;
+            padding: 1px 0;
         }
-
         .result-item .label {
             font-size: 12px;
             color: #5a6e8a;
             font-weight: 600;
         }
-
         .result-item .value {
             font-size: 15px;
             font-weight: 700;
@@ -292,9 +405,8 @@
             min-width: 64px;
             text-align: center;
             font-variant-numeric: tabular-nums;
-            line-height: 28px;
+            line-height: 26px;
         }
-
         .result-item .value.positive {
             color: #34a853;
             background: #e6f4ea;
@@ -303,117 +415,101 @@
             color: #ea4335;
             background: #fce8e6;
         }
-
         .final-row {
-            margin-top: 6px;
-            padding-top: 8px;
+            margin-top: 4px;
+            padding-top: 6px;
             border-top: 2px solid #eef2f9;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
         .final-row .label {
             font-size: 13px;
             font-weight: 700;
             color: #f6b83d;
             letter-spacing: 0.3px;
         }
-
         .final-row .value {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
-            padding: 0 16px;
+            padding: 0 14px;
             border-radius: 28px;
-            min-width: 76px;
+            min-width: 72px;
             text-align: center;
             font-variant-numeric: tabular-nums;
-            line-height: 38px;
+            line-height: 34px;
             background: #fef8ed;
             border: 2px solid #f6b83d;
             color: #f6b83d;
         }
-
         .final-row .value.positive {
             color: #34a853;
             border-color: #34a853;
             background: #e6f4ea;
         }
-
         .final-row .value.negative {
             color: #ea4335;
             border-color: #ea4335;
             background: #fce8e6;
         }
-
         .final-row .value.zero {
             color: #b8c5d4;
             border-color: #e0e6ef;
             background: #f5f7fa;
         }
-
-        /* ===== 保存区 ===== */
         .save-section {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-top: 12px;
+            gap: 8px;
+            margin-top: 8px;
             flex-wrap: wrap;
         }
-
         .btn-save,
         .btn-view-history {
             flex: 1;
-            padding: 10px 6px;
+            padding: 8px 4px;
             border: none;
             border-radius: 14px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
             letter-spacing: 0.3px;
-            min-width: 80px;
+            min-width: 70px;
         }
-
         .btn-save {
             background: linear-gradient(135deg, #34a853, #2d8e47);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(52, 168, 83, 0.25);
         }
-
         .btn-save:active {
             transform: scale(0.97);
         }
-
         .btn-view-history {
             background: linear-gradient(135deg, #4A90D9, #357abd);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(74, 144, 217, 0.25);
         }
-
         .btn-view-history:active {
             transform: scale(0.97);
         }
-
         .history-count {
             font-size: 12px;
             color: #5a6e8a;
             background: #f0f2f5;
-            padding: 6px 14px;
+            padding: 4px 12px;
             border-radius: 20px;
             white-space: nowrap;
             font-weight: 500;
         }
-
         .hint {
             font-size: 10px;
             color: #b8c5d4;
             text-align: center;
-            margin-top: 8px;
+            margin-top: 6px;
             letter-spacing: 0.5px;
         }
-
         .empty-value {
             color: #b8c5d4 !important;
             background: #f0f2f5 !important;
@@ -434,11 +530,9 @@
             align-items: center;
             padding: 20px;
         }
-
         .modal-overlay.active {
             display: flex;
         }
-
         .modal {
             background: #ffffff;
             border-radius: 24px;
@@ -451,7 +545,6 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: slideUp 0.3s ease;
         }
-
         @keyframes slideUp {
             from {
                 transform: translateY(30px);
@@ -462,19 +555,16 @@
                 opacity: 1;
             }
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
         }
-
         .modal-header h3 {
             font-size: 18px;
             color: #1a2634;
         }
-
         .modal-close {
             background: none;
             border: none;
@@ -483,12 +573,37 @@
             cursor: pointer;
             padding: 0 8px;
         }
-
         .modal-close:hover {
             color: #1a2634;
         }
 
-        /* 筛选控件 */
+        .quick-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .quick-filter .qf-btn {
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid #dce2ea;
+            background: #f5f8fe;
+            font-size: 12px;
+            font-weight: 600;
+            color: #5a6e8a;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .quick-filter .qf-btn:hover {
+            background: #e8edf5;
+        }
+        .quick-filter .qf-btn.active {
+            background: #4A90D9;
+            color: #fff;
+            border-color: #4A90D9;
+        }
+
         .filter-section {
             display: flex;
             flex-wrap: wrap;
@@ -498,13 +613,11 @@
             border-bottom: 1px solid #eef2f9;
             align-items: center;
         }
-
         .filter-section label {
             font-size: 11px;
             color: #5a6e8a;
             font-weight: 600;
         }
-
         .filter-section select,
         .filter-section input {
             padding: 4px 6px;
@@ -514,12 +627,10 @@
             background: #fafbfc;
             outline: none;
         }
-
         .filter-section select:focus,
         .filter-section input:focus {
             border-color: #4A90D9;
         }
-
         .filter-section .filter-btn {
             padding: 4px 12px;
             border-radius: 8px;
@@ -529,12 +640,10 @@
             font-size: 12px;
             cursor: pointer;
         }
-
         .filter-section .filter-btn:active {
             transform: scale(0.95);
         }
 
-        /* 列控制 */
         .col-control {
             display: flex;
             flex-wrap: wrap;
@@ -543,7 +652,6 @@
             padding-bottom: 8px;
             border-bottom: 1px solid #eef2f9;
         }
-
         .col-control .col-toggle {
             font-size: 10px;
             padding: 2px 8px;
@@ -555,13 +663,11 @@
             transition: all 0.2s;
             user-select: none;
         }
-
         .col-control .col-toggle.active {
             background: #4A90D9;
             color: #ffffff;
             border-color: #4A90D9;
         }
-
         .col-control .col-toggle:active {
             transform: scale(0.95);
         }
@@ -571,7 +677,6 @@
             flex: 1;
             position: relative;
         }
-
         .modal-body table {
             width: 100%;
             border-collapse: collapse;
@@ -579,7 +684,6 @@
             border-collapse: separate;
             border-spacing: 0;
         }
-
         .modal-body th {
             background: #f0f4fe;
             padding: 6px 4px;
@@ -591,45 +695,51 @@
             z-index: 2;
             white-space: nowrap;
         }
-
         .modal-body .total-row {
             background: #fff3cd;
             font-weight: 700;
         }
-
         .modal-body .total-row td {
             padding: 6px 4px;
             border-bottom: 2px solid #f6b83d;
             color: #1a2634;
         }
-
         .modal-body td {
             padding: 5px 4px;
             border-bottom: 1px solid #eef2f9;
             color: #1a2634;
             vertical-align: middle;
         }
-
         .modal-body .empty-msg {
             text-align: center;
             color: #b8c5d4;
             padding: 30px 0;
         }
-
-        .modal-body .del-btn {
+        .modal-body .del-btn,
+        .modal-body .update-btn,
+        .modal-body .edit-btn {
             background: none;
             border: none;
-            color: #f28b82;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             padding: 0 4px;
             line-height: 1;
+            color: #4A90D9;
         }
-
-        .modal-body .del-btn:active {
+        .modal-body .del-btn {
+            color: #f28b82;
+        }
+        .modal-body .update-btn {
+            color: #34a853;
+        }
+        .modal-body .edit-btn {
+            color: #f6b83d;
+        }
+        .modal-body .del-btn:active,
+        .modal-body .update-btn:active,
+        .modal-body .edit-btn:active {
             transform: scale(0.85);
         }
-
         .modal-footer {
             display: flex;
             gap: 10px;
@@ -637,7 +747,6 @@
             padding-top: 12px;
             border-top: 2px solid #eef2f9;
         }
-
         .btn-clear-history,
         .btn-export-excel {
             flex: 1;
@@ -649,23 +758,95 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-
         .btn-clear-history {
             background: #fce8e6;
             color: #ea4335;
         }
-
         .btn-clear-history:active {
             transform: scale(0.97);
         }
-
         .btn-export-excel {
             background: #34a853;
             color: #ffffff;
         }
-
         .btn-export-excel:active {
             transform: scale(0.97);
+        }
+
+        /* ===== 编辑弹窗 ===== */
+        .edit-form-group {
+            margin-bottom: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .edit-form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #3d4e66;
+            width: 70px;
+            flex-shrink: 0;
+        }
+        .edit-form-group input,
+        .edit-form-group select {
+            flex: 1;
+            padding: 4px 6px;
+            font-size: 13px;
+            border: 1px solid #dce2ea;
+            border-radius: 6px;
+            outline: none;
+        }
+        .edit-form-group input:focus,
+        .edit-form-group select:focus {
+            border-color: #4A90D9;
+        }
+        .edit-form-group input[readonly] {
+            background: #f0f2f5;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .edit-form-group .radio-group-inline {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .edit-form-group .radio-group-inline label {
+            width: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 400;
+            font-size: 12px;
+        }
+
+        /* ===== 教程内容 ===== */
+        .tutorial-content {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        .tutorial-content h4 {
+            margin-top: 12px;
+            margin-bottom: 4px;
+            color: #1a2634;
+            font-size: 14px;
+        }
+        .tutorial-content h4:first-of-type {
+            margin-top: 0;
+        }
+        .tutorial-content ul {
+            padding-left: 20px;
+            margin: 4px 0 8px 0;
+        }
+        .tutorial-content ul li {
+            margin-bottom: 2px;
+        }
+        .tutorial-content .highlight {
+            background: #f0f4fe;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #4A90D9;
         }
 
         /* ===== 移动端适配 ===== */
@@ -674,22 +855,36 @@
                 padding: 8px;
             }
             .container {
-                padding: 12px 10px 16px;
+                padding: 10px 8px 12px;
                 border-radius: 20px;
             }
             .header h1 {
-                font-size: 16px;
+                font-size: 14px;
             }
             .header .brand {
+                font-size: 8px;
+            }
+            .header .dev-credit {
                 font-size: 9px;
+            }
+            .tutorial-btn-inline {
+                width: 28px;
+                height: 28px;
+                font-size: 15px;
+            }
+            .alert-bar {
+                font-size: 12px;
+                min-height: 20px;
             }
             .section-title {
                 font-size: 9px;
+                margin-bottom: 3px;
+                padding-bottom: 2px;
             }
             .input-group {
-                padding: 0 8px 0 10px;
+                padding: 0 6px 0 8px;
                 border-radius: 10px;
-                margin-bottom: 4px;
+                margin-bottom: 3px;
             }
             .input-group label {
                 font-size: 11px;
@@ -697,7 +892,7 @@
             }
             .input-group input {
                 font-size: 13px;
-                padding: 6px 2px 6px 4px;
+                padding: 5px 2px 5px 4px;
             }
             .input-group .fund-code-input {
                 flex: 0 0 66px;
@@ -706,10 +901,35 @@
             .input-group .fund-name {
                 font-size: 11px;
             }
-            .net-input-group {
-                padding: 0 8px 0 10px;
-                border-radius: 8px;
+            .radio-group {
+                padding: 3px 8px;
+                gap: 14px;
                 margin-bottom: 3px;
+            }
+            .radio-group .radio-option {
+                font-size: 11px;
+            }
+            .radio-group .radio-option .custom-radio {
+                width: 14px;
+                height: 14px;
+            }
+            .radio-group .radio-option input[type="radio"]:checked+.custom-radio::after {
+                width: 6px;
+                height: 6px;
+            }
+            .auto-register-row {
+                margin-bottom: 3px;
+            }
+            .btn-auto-register {
+                font-size: 11px;
+                padding: 4px 12px;
+                min-width: 60px;
+                border-radius: 10px;
+            }
+            .net-input-group {
+                padding: 0 6px 0 8px;
+                border-radius: 8px;
+                margin-bottom: 2px;
             }
             .net-input-group label {
                 font-size: 11px;
@@ -717,59 +937,60 @@
             }
             .net-input-group input {
                 font-size: 13px;
-                padding: 5px 2px 5px 4px;
+                padding: 4px 2px 4px 4px;
             }
             .btn-group {
-                margin: 6px 0 8px 0;
+                margin: 4px 0 6px 0;
                 gap: 4px;
             }
             .btn-fetch {
                 font-size: 11px;
-                padding: 6px 2px;
+                padding: 5px 2px;
                 border-radius: 10px;
             }
             .status-msg {
                 font-size: 10px;
-                min-height: 16px;
+                min-height: 14px;
                 margin-bottom: 4px;
             }
             .result-area {
-                padding: 8px 10px 10px;
-                margin-top: 8px;
+                padding: 6px 8px 8px;
+                margin-top: 6px;
                 border-radius: 12px;
             }
             .result-item .value {
                 font-size: 14px;
                 min-width: 56px;
-                line-height: 26px;
+                line-height: 24px;
                 padding: 0 10px;
             }
             .final-row .value {
-                font-size: 20px;
-                min-width: 66px;
-                line-height: 34px;
-                padding: 0 12px;
+                font-size: 18px;
+                min-width: 64px;
+                line-height: 30px;
+                padding: 0 10px;
             }
             .final-row .label {
                 font-size: 12px;
             }
             .save-section {
-                flex-wrap: wrap;
-                gap: 6px;
+                margin-top: 6px;
+                gap: 4px;
             }
             .btn-save,
             .btn-view-history {
-                font-size: 12px;
-                padding: 8px 4px;
+                font-size: 11px;
+                padding: 6px 2px;
                 flex: 1 1 45%;
+                min-width: 60px;
             }
             .history-count {
-                font-size: 11px;
-                padding: 4px 12px;
+                font-size: 10px;
+                padding: 2px 10px;
             }
             .hint {
                 font-size: 9px;
-                margin-top: 6px;
+                margin-top: 4px;
             }
             .modal {
                 padding: 16px 12px;
@@ -794,8 +1015,19 @@
                 font-size: 10px;
                 padding: 2px 4px;
             }
+            .edit-form-group label {
+                width: 60px;
+                font-size: 11px;
+            }
+            .edit-form-group input,
+            .edit-form-group select {
+                font-size: 12px;
+            }
+            .quick-filter .qf-btn {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
         }
-
         @media (max-width: 380px) {
             .input-group label {
                 width: 50px;
@@ -816,21 +1048,54 @@
                 min-width: 44px;
             }
             .final-row .value {
-                font-size: 18px;
+                font-size: 16px;
                 min-width: 58px;
-                line-height: 30px;
-                padding: 0 10px;
+                line-height: 26px;
+                padding: 0 8px;
             }
             .header h1 {
-                font-size: 14px;
+                font-size: 13px;
             }
             .btn-save,
             .btn-view-history {
                 font-size: 10px;
-                padding: 6px 2px;
+                padding: 4px 2px;
             }
             .modal-body table {
                 font-size: 9px;
+            }
+            .radio-group {
+                gap: 10px;
+                padding: 2px 6px;
+            }
+            .radio-group .radio-option {
+                font-size: 10px;
+            }
+            .btn-auto-register {
+                font-size: 10px;
+                padding: 3px 8px;
+                min-width: 50px;
+            }
+            .edit-form-group label {
+                width: 50px;
+                font-size: 10px;
+            }
+            .edit-form-group input,
+            .edit-form-group select {
+                font-size: 11px;
+            }
+            .quick-filter .qf-btn {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
+            .alert-bar {
+                font-size: 11px;
+                min-height: 18px;
+            }
+            .tutorial-btn-inline {
+                width: 24px;
+                height: 24px;
+                font-size: 13px;
             }
         }
     </style>
@@ -841,11 +1106,33 @@
         <!-- ===== 头部 ===== -->
         <div class="header">
             <div class="brand">⚡ 天天向上 · 专属</div>
-            <h1>基金收益计算器</h1>
+            <div class="title-wrapper">
+                <h1>基金收益计算器</h1>
+                <button class="tutorial-btn-inline" id="tutorialTriggerBtn" title="使用教程">
+                    <span>❓</span>
+                </button>
+            </div>
             <div class="dev-credit">开发者 —— 小小</div>
         </div>
 
+        <!-- ===== 独立提醒栏 ===== -->
+        <div id="settlementAlert" class="alert-bar no-alert">📋 今日无应结算</div>
+
         <div class="section-title">📋 参数设置</div>
+
+        <!-- ===== 收包/卖包单选 ===== -->
+        <div class="radio-group" id="tradeTypeGroup">
+            <label class="radio-option">
+                <input type="radio" name="tradeType" value="收包" checked>
+                <span class="custom-radio"></span>
+                收包
+            </label>
+            <label class="radio-option">
+                <input type="radio" name="tradeType" value="卖包">
+                <span class="custom-radio"></span>
+                卖包
+            </label>
+        </div>
 
         <!-- 金额 -->
         <div class="input-group">
@@ -866,13 +1153,18 @@
             <span id="fundNameDisplay" class="fund-name">—</span>
         </div>
 
-        <!-- 买入日期（单独一行） -->
+        <!-- ===== 自动登记按钮行 ===== -->
+        <div class="auto-register-row">
+            <button class="btn-auto-register" id="autoRegisterBtn">📋 自动登记</button>
+        </div>
+
+        <!-- 买入日期 -->
         <div class="input-group">
             <label>买入日期</label>
             <input type="date" id="buyDate" style="flex:1;">
         </div>
 
-        <!-- 卖出日期（单独一行） -->
+        <!-- 卖出日期 -->
         <div class="input-group">
             <label>卖出日期</label>
             <input type="date" id="sellDate" style="flex:1;">
@@ -895,9 +1187,11 @@
             <label>卖出净值</label>
             <input type="number" id="sellPrice" placeholder="1.2762" step="any">
         </div>
+
+        <!-- 分红净值（只读） -->
         <div class="net-input-group">
             <label>分红净值</label>
-            <input type="number" id="dividendPrice" placeholder="0" step="any">
+            <input type="number" id="dividendPrice" placeholder="0" step="any" readonly style="color:#555; background:#f0f2f5; cursor:not-allowed;">
         </div>
 
         <!-- 交易对象 -->
@@ -935,7 +1229,11 @@
                 <h3>📋 历史记录</h3>
                 <button class="modal-close" id="modalCloseBtn">✕</button>
             </div>
-            <!-- 筛选控件 -->
+            <div class="quick-filter">
+                <button class="qf-btn" id="qfTodayBuy" data-type="buy">📅 今日买入</button>
+                <button class="qf-btn" id="qfTodaySell" data-type="sell">📅 今日卖出</button>
+                <button class="qf-btn" id="qfClear" style="background:transparent; border-color:transparent; color:#8a9bb5;">清除筛选</button>
+            </div>
             <div class="filter-section" id="filterSection">
                 <label>筛选字段：</label>
                 <select id="filterField">
@@ -947,13 +1245,21 @@
                     <option value="all">全部</option>
                     <option value="year">按年</option>
                     <option value="yearmonth">按年月</option>
+                    <option value="date">具体日期</option>
                 </select>
                 <input type="number" id="filterYear" placeholder="2026" style="width:70px; display:none;" min="2000" max="2100">
                 <input type="month" id="filterMonth" style="width:120px; display:none;">
+                <input type="date" id="filterDate" style="width:140px; display:none;">
+                <label>交易类型：</label>
+                <select id="filterTradeType">
+                    <option value="all">全部</option>
+                    <option value="收包">收包</option>
+                    <option value="卖包">卖包</option>
+                </select>
+                <!-- 应用按钮保留，但自动触发后实际上点击它会再次应用（无影响） -->
                 <button class="filter-btn" id="filterApplyBtn">应用</button>
                 <button class="filter-btn" id="filterResetBtn" style="background:#8a9bb5;">重置</button>
             </div>
-            <!-- 列控制 -->
             <div class="col-control" id="colControl"></div>
             <div class="modal-body" id="modalBody">
                 <div class="empty-msg">暂无记录</div>
@@ -965,12 +1271,112 @@
         </div>
     </div>
 
+    <!-- ===== 编辑记录弹窗 ===== -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>✏️ 编辑记录</h3>
+                <button class="modal-close" id="editModalCloseBtn">✕</button>
+            </div>
+            <div class="modal-body" id="editModalBody" style="overflow-y: auto;">
+                <div id="editForm"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-save" id="editSaveBtn" style="flex:1;">💾 保存修改</button>
+                <button class="btn-view-history" id="editCancelBtn" style="flex:1;">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 使用教程弹窗 ===== -->
+    <div class="modal-overlay" id="tutorialModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📖 使用教程</h3>
+                <button class="modal-close" id="tutorialCloseBtn">✕</button>
+            </div>
+            <div class="modal-body tutorial-content" style="padding: 4px 0;">
+                <h4>📌 快速上手</h4>
+                <ul>
+                    <li><strong>1. 输入参数</strong>：填写金额、红包比例、基金代码，系统会自动补全基金名称。</li>
+                    <li><strong>2. 选择日期</strong>：分别选择买入日期和卖出日期，系统自动获取净值。</li>
+                    <li><strong>3. 自动计算</strong>：净收益和结算金额会实时显示，分红净值自动导入。</li>
+                    <li><strong>4. 保存记录</strong>：点击「💾 保存记录」保存当前数据，同时复制到剪贴板方便分享。</li>
+                </ul>
+
+                <h4>⚡ 自动登记</h4>
+                <ul>
+                    <li>点击「📋 自动登记」一键完成：<br>
+                        • 根据当前时间（考虑收盘和交易日）自动确定买入日期<br>
+                        • 买入日期 + 7 个交易日自动确定为卖出日期<br>
+                        • 自动获取净值和分红并保存记录，同时复制到剪贴板
+                    </li>
+                </ul>
+
+                <h4>📊 查看与管理历史记录</h4>
+                <ul>
+                    <li>点击「📋 查看记录」打开历史列表，支持：<br>
+                        • <span class="highlight">快速筛选</span>：今日买入 / 今日卖出<br>
+                        • <span class="highlight">高级筛选</span>：按年/年月/具体日期筛选买入或卖出日期，<strong>选择即生效</strong><br>
+                        • <span class="highlight">列显示控制</span>：点击列标签可隐藏/显示，状态自动保存<br>
+                        • 每条记录支持 <span class="highlight">更新</span>（重新获取净值）、<span class="highlight">编辑</span>（手动修改）、<span class="highlight">删除</span>
+                    </li>
+                    <li>导出 Excel：一键导出所有记录为 xlsx 文件。</li>
+                </ul>
+
+                <h4>📋 复制与分享</h4>
+                <ul>
+                    <li>保存记录或更新记录时，系统会自动将当前记录生成格式化文本并复制到剪贴板，可直接粘贴至微信、邮件等。</li>
+                    <li>默认只复制有内容的字段，空字段自动跳过，保持简洁。</li>
+                </ul>
+
+                <h4>🔔 今日应结算提醒</h4>
+                <ul>
+                    <li>页面顶部独立区域显示「今日应结算 X 单」，提醒您今日有卖出日期的记录需要处理。</li>
+                </ul>
+                <p style="margin-top: 12px; color: #8a9bb5; font-size: 12px; text-align: center;">💡 如有疑问，可再次点击标题右侧 ❓ 按钮查看本教程。</p>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ============================================================
+        // 节假日列表（A股休市日，格式 YYYY-MM-DD）
+        // ============================================================
+        const HOLIDAYS = [
+            '2026-01-01',
+            '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20',
+            '2026-04-06',
+            '2026-05-01', '2026-05-04', '2026-05-05',
+            '2026-06-19', '2026-06-22',
+            '2026-09-27', '2026-09-28', '2026-09-29', '2026-09-30',
+            '2026-10-01', '2026-10-02', '2026-10-05', '2026-10-06', '2026-10-07'
+        ];
+
+        function isTradingDay(date) {
+            const day = date.getDay();
+            if (day === 0 || day === 6) return false;
+            const str = date.toISOString().slice(0, 10);
+            return !HOLIDAYS.includes(str);
+        }
+
+        function nextTradingDay(date) {
+            let d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            while (!isTradingDay(d)) {
+                d.setDate(d.getDate() + 1);
+            }
+            return d;
+        }
+
         // ============================================================
         // 存储键
         // ============================================================
         const STORAGE_KEY = 'fund_calculator_data';
         const HISTORY_KEY = 'fund_history_records';
+        const TRADE_TYPE_KEY = 'trade_type_preference';
+        const VISIBLE_COLUMNS_KEY = 'fund_visible_columns';
+        const TUTORIAL_SHOWN_KEY = 'fund_tutorial_shown';
 
         // ============================================================
         // 列可见性配置
@@ -978,6 +1384,7 @@
         const COLUMNS = [
             { key: 'index', label: '#' },
             { key: 'timestamp', label: '时间' },
+            { key: 'tradeType', label: '交易类型' },
             { key: 'amount', label: '金额' },
             { key: 'bonusRate', label: '红包' },
             { key: 'fundCode', label: '基金代码' },
@@ -992,10 +1399,37 @@
             { key: 'finalResult', label: '结算' }
         ];
         let visibleColumns = {};
-        COLUMNS.forEach(col => visibleColumns[col.key] = true);
+
+        function loadColumnVisibility() {
+            try {
+                const stored = localStorage.getItem(VISIBLE_COLUMNS_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    COLUMNS.forEach(col => {
+                        visibleColumns[col.key] = parsed[col.key] !== undefined ? parsed[col.key] : true;
+                    });
+                    return;
+                }
+            } catch (e) {}
+            COLUMNS.forEach(col => visibleColumns[col.key] = true);
+        }
+        loadColumnVisibility();
+
+        function saveColumnVisibility() {
+            try {
+                localStorage.setItem(VISIBLE_COLUMNS_KEY, JSON.stringify(visibleColumns));
+            } catch (e) {}
+        }
 
         // 当前筛选条件
-        let currentFilter = { field: 'buyDate', type: 'all', year: '', month: '' };
+        let currentFilter = {
+            field: 'buyDate',
+            type: 'all',
+            year: '',
+            month: '',
+            date: '',
+            tradeType: 'all'
+        };
 
         // ============================================================
         // 历史记录管理
@@ -1023,9 +1457,44 @@
         }
 
         // ============================================================
+        // 交易类型记忆
+        // ============================================================
+        function loadTradeTypePreference() {
+            try {
+                const val = localStorage.getItem(TRADE_TYPE_KEY);
+                if (val === '收包' || val === '卖包') {
+                    return val;
+                }
+            } catch (e) {}
+            return '收包';
+        }
+
+        function saveTradeTypePreference(value) {
+            try {
+                localStorage.setItem(TRADE_TYPE_KEY, value);
+            } catch (e) {}
+        }
+
+        function initTradeType() {
+            const preferred = loadTradeTypePreference();
+            const radios = document.querySelectorAll('input[name="tradeType"]');
+            radios.forEach(radio => {
+                radio.checked = (radio.value === preferred);
+            });
+            radios.forEach(radio => {
+                radio.addEventListener('change', function(e) {
+                    if (this.checked) {
+                        saveTradeTypePreference(this.value);
+                    }
+                });
+            });
+        }
+
+        // ============================================================
         // 获取当前页面数据
         // ============================================================
         function getCurrentRecord() {
+            const tradeType = document.querySelector('input[name="tradeType"]:checked')?.value || '收包';
             const amount = document.getElementById('amount').value || '';
             const bonusRate = document.getElementById('bonusRate').value || '';
             const fundCode = document.getElementById('fundCode').value.trim() || '';
@@ -1042,7 +1511,7 @@
             const finalResult = document.getElementById('finalResult').textContent || '—';
             const now = new Date();
             const timestamp = now.toLocaleString('zh-CN', { hour12: false });
-            return { timestamp, amount, bonusRate, fundCode, fundName, buyDate, sellDate, buyPrice, sellPrice,
+            return { timestamp, tradeType, amount, bonusRate, fundCode, fundName, buyDate, sellDate, buyPrice, sellPrice,
                 dividendPrice, tradeTarget, netProfit, finalResult };
         }
 
@@ -1057,6 +1526,7 @@
             const data = records.map((r, index) => ({
                 '序号': index + 1,
                 '时间': r.timestamp || '',
+                '交易类型': r.tradeType || '',
                 '金额(元)': r.amount || '',
                 '红包(千分之)': r.bonusRate || '',
                 '基金代码': r.fundCode || '',
@@ -1074,7 +1544,7 @@
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(data);
             ws['!cols'] = [
-                { wch: 6 }, { wch: 20 }, { wch: 12 }, { wch: 14 },
+                { wch: 6 }, { wch: 20 }, { wch: 10 }, { wch: 12 }, { wch: 14 },
                 { wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 12 },
                 { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 14 },
                 { wch: 18 }, { wch: 28 }
@@ -1100,6 +1570,8 @@
             historyRecords.push(record);
             saveHistoryToStorage();
             setStatus(`✅ 已保存第 ${historyRecords.length} 条记录`, 'success');
+            showTodaySettlementAlert();
+            return record;
         }
 
         // ============================================================
@@ -1114,17 +1586,271 @@
                 renderHistoryModal();
             }
             setStatus(`🗑️ 已删除记录，剩余 ${historyRecords.length} 条`, 'warning');
+            showTodaySettlementAlert();
         }
 
         // ============================================================
-        // 筛选函数（仅买入日期/卖出日期）
+        // 复制记录到剪贴板
+        // ============================================================
+        function copyRecordToClipboard(record) {
+            if (!record) {
+                setStatus('⚠️ 无有效记录可复制', 'warning');
+                return;
+            }
+            const fields = [
+                { label: '交易类型', key: 'tradeType' },
+                { label: '金额(元)', key: 'amount' },
+                { label: '红包(千分之)', key: 'bonusRate' },
+                { label: '基金代码', key: 'fundCode' },
+                { label: '基金名称', key: 'fundName' },
+                { label: '买入日期', key: 'buyDate' },
+                { label: '卖出日期', key: 'sellDate' },
+                { label: '买入净值', key: 'buyPrice' },
+                { label: '卖出净值', key: 'sellPrice' },
+                { label: '分红净值', key: 'dividendPrice' },
+                { label: '交易对象', key: 'tradeTarget' },
+                { label: '净收益(不含红包)', key: 'netProfit' },
+                { label: '结算(收包时，负数为转出)', key: 'finalResult' }
+            ];
+
+            let lines = [];
+            const now = new Date();
+            const timeStr = now.toLocaleString('zh-CN', { hour12: false });
+            lines.push(`📊 基金收益计算记录 (${timeStr})`);
+            lines.push('');
+
+            fields.forEach(item => {
+                let value = record[item.key];
+                if (value === undefined || value === null) value = '';
+                value = String(value).trim();
+                if (value === '' || value === '—' || value === '未知基金') return;
+                lines.push(`${item.label}：${value}`);
+            });
+
+            if (lines.length <= 2) {
+                setStatus('⚠️ 没有有效数据可复制', 'warning');
+                return;
+            }
+
+            const text = lines.join('\n');
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    setStatus('✅ 记录已复制到剪贴板，可粘贴分享', 'success');
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                setStatus('✅ 记录已复制到剪贴板，可粘贴分享', 'success');
+            } catch (e) {
+                setStatus('❌ 复制失败，请手动复制', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // ============================================================
+        // 更新单条记录
+        // ============================================================
+        async function updateRecord(index) {
+            const record = historyRecords[index];
+            if (!record) return;
+            const fundCode = record.fundCode;
+            const buyDate = record.buyDate;
+            const sellDate = record.sellDate;
+            if (!fundCode || !buyDate || !sellDate) {
+                alert('该记录缺少基金代码、买入日期或卖出日期，无法更新');
+                return;
+            }
+            try {
+                const buyData = await fetchNetValueOnDate(fundCode, buyDate);
+                const sellData = await fetchNetValueOnDate(fundCode, sellDate);
+                const dividend = (sellData.accNav - buyData.accNav) - (sellData.unitNav - buyData.unitNav);
+                const dividendPrice = dividend > 0 ? Number(dividend.toFixed(4)) : 0;
+
+                record.buyPrice = buyData.unitNav;
+                record.sellPrice = sellData.unitNav;
+                record.dividendPrice = dividendPrice;
+
+                const amount = parseFloat(record.amount) || 0;
+                const bonusRate = parseFloat(record.bonusRate) || 0;
+                const buyPrice = parseFloat(record.buyPrice) || 0;
+                const sellPrice = parseFloat(record.sellPrice) || 0;
+                const divPrice = parseFloat(record.dividendPrice) || 0;
+                if (buyPrice > 0 && sellPrice > 0) {
+                    const netProfit = (amount / buyPrice) * (sellPrice + divPrice) - amount;
+                    const finalResult = netProfit + (amount / 1000) * bonusRate;
+                    record.netProfit = netProfit.toFixed(2);
+                    record.finalResult = finalResult.toFixed(2);
+                } else {
+                    record.netProfit = '—';
+                    record.finalResult = '—';
+                }
+
+                saveHistoryToStorage();
+                if (document.getElementById('historyModal').classList.contains('active')) {
+                    renderHistoryModal();
+                }
+                setStatus(`✅ 记录已更新`, 'success');
+                copyRecordToClipboard(record);
+                showTodaySettlementAlert();
+            } catch (e) {
+                alert('更新失败：' + e.message);
+            }
+        }
+
+        // ============================================================
+        // 编辑单条记录
+        // ============================================================
+        function editRecord(index) {
+            const record = historyRecords[index];
+            if (!record) return;
+            const form = document.getElementById('editForm');
+            const tradeType = record.tradeType || '收包';
+            const amount = record.amount || '';
+            const bonusRate = record.bonusRate || '';
+            const fundCode = record.fundCode || '';
+            const fundName = record.fundName || '';
+            const buyDate = record.buyDate || '';
+            const sellDate = record.sellDate || '';
+            const buyPrice = record.buyPrice || '';
+            const sellPrice = record.sellPrice || '';
+            const dividendPrice = record.dividendPrice || '';
+            const tradeTarget = record.tradeTarget || '';
+            const netProfit = record.netProfit || '';
+            const finalResult = record.finalResult || '';
+
+            form.innerHTML = `
+                <div class="edit-form-group">
+                    <label>交易类型</label>
+                    <div class="radio-group-inline">
+                        <label><input type="radio" name="editTradeType" value="收包" ${tradeType==='收包'?'checked':''}> 收包</label>
+                        <label><input type="radio" name="editTradeType" value="卖包" ${tradeType==='卖包'?'checked':''}> 卖包</label>
+                    </div>
+                </div>
+                <div class="edit-form-group">
+                    <label>金额(元)</label>
+                    <input type="number" id="editAmount" value="${amount}" step="any">
+                </div>
+                <div class="edit-form-group">
+                    <label>红包(千分之)</label>
+                    <input type="number" id="editBonusRate" value="${bonusRate}" step="any">
+                </div>
+                <div class="edit-form-group">
+                    <label>基金代码</label>
+                    <input type="text" id="editFundCode" value="${fundCode}">
+                </div>
+                <div class="edit-form-group">
+                    <label>基金名称</label>
+                    <input type="text" id="editFundName" value="${fundName}">
+                </div>
+                <div class="edit-form-group">
+                    <label>买入日期</label>
+                    <input type="date" id="editBuyDate" value="${buyDate}">
+                </div>
+                <div class="edit-form-group">
+                    <label>卖出日期</label>
+                    <input type="date" id="editSellDate" value="${sellDate}">
+                </div>
+                <div class="edit-form-group">
+                    <label>买入净值</label>
+                    <input type="number" id="editBuyPrice" value="${buyPrice}" step="any" readonly>
+                </div>
+                <div class="edit-form-group">
+                    <label>卖出净值</label>
+                    <input type="number" id="editSellPrice" value="${sellPrice}" step="any" readonly>
+                </div>
+                <div class="edit-form-group">
+                    <label>分红净值</label>
+                    <input type="number" id="editDividendPrice" value="${dividendPrice}" step="any">
+                </div>
+                <div class="edit-form-group">
+                    <label>交易对象</label>
+                    <input type="text" id="editTradeTarget" value="${tradeTarget}">
+                </div>
+                <div class="edit-form-group">
+                    <label>净收益</label>
+                    <input type="text" id="editNetProfit" value="${netProfit}" readonly>
+                </div>
+                <div class="edit-form-group">
+                    <label>结算</label>
+                    <input type="text" id="editFinalResult" value="${finalResult}" readonly>
+                </div>
+            `;
+            document.getElementById('editModal').dataset.editIndex = index;
+            document.getElementById('editModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function saveEditedRecord() {
+            const index = parseInt(document.getElementById('editModal').dataset.editIndex);
+            if (isNaN(index) || index < 0 || index >= historyRecords.length) {
+                alert('记录索引无效');
+                return;
+            }
+            const record = historyRecords[index];
+            const tradeType = document.querySelector('input[name="editTradeType"]:checked')?.value || '收包';
+            const amount = document.getElementById('editAmount').value;
+            const bonusRate = document.getElementById('editBonusRate').value;
+            const fundCode = document.getElementById('editFundCode').value.trim();
+            const fundName = document.getElementById('editFundName').value.trim();
+            const buyDate = document.getElementById('editBuyDate').value;
+            const sellDate = document.getElementById('editSellDate').value;
+            const tradeTarget = document.getElementById('editTradeTarget').value.trim();
+
+            if (!fundCode) { alert('基金代码不能为空'); return; }
+            if (!buyDate) { alert('买入日期不能为空'); return; }
+            if (!sellDate) { alert('卖出日期不能为空'); return; }
+
+            record.tradeType = tradeType;
+            record.amount = amount;
+            record.bonusRate = bonusRate;
+            record.fundCode = fundCode;
+            record.fundName = fundName;
+            record.buyDate = buyDate;
+            record.sellDate = sellDate;
+            record.tradeTarget = tradeTarget;
+            record.dividendPrice = document.getElementById('editDividendPrice').value;
+
+            saveHistoryToStorage();
+            closeEditModal();
+            if (document.getElementById('historyModal').classList.contains('active')) {
+                renderHistoryModal();
+            }
+            setStatus(`✅ 记录已更新`, 'success');
+            showTodaySettlementAlert();
+        }
+
+        // ============================================================
+        // 筛选函数（支持具体日期）
         // ============================================================
         function filterRecords(records) {
             const field = currentFilter.field;
             const type = currentFilter.type;
-            if (type === 'all') return records;
+            const tradeType = currentFilter.tradeType;
 
             return records.filter(r => {
+                if (tradeType !== 'all' && r.tradeType !== tradeType) {
+                    return false;
+                }
+                if (type === 'all') return true;
                 let value = '';
                 if (field === 'buyDate') {
                     value = r.buyDate || '';
@@ -1133,7 +1859,9 @@
                 }
                 if (!value) return false;
 
-                if (type === 'year') {
+                if (type === 'date') {
+                    return value === currentFilter.date;
+                } else if (type === 'year') {
                     const year = value.slice(0, 4);
                     return year === currentFilter.year;
                 } else if (type === 'yearmonth') {
@@ -1160,7 +1888,170 @@
         }
 
         // ============================================================
-        // 弹窗渲染（含合计行、筛选、列控制）
+        // 独立提醒：今日应结算
+        // ============================================================
+        function showTodaySettlementAlert() {
+            const today = new Date().toISOString().slice(0, 10);
+            const count = historyRecords.filter(r => r.sellDate === today).length;
+            const alertEl = document.getElementById('settlementAlert');
+            if (count > 0) {
+                alertEl.textContent = `⚠️ 今日应结算 ${count} 单 (卖出日期为今日)`;
+                alertEl.className = 'alert-bar has-alert';
+            } else {
+                alertEl.textContent = '📋 今日无应结算';
+                alertEl.className = 'alert-bar no-alert';
+            }
+        }
+
+        // ============================================================
+        // 快速筛选功能
+        // ============================================================
+        function applyQuickFilter(type) {
+            const today = new Date().toISOString().slice(0, 10);
+            if (type === 'buy') {
+                currentFilter.field = 'buyDate';
+                currentFilter.type = 'date';
+                currentFilter.date = today;
+                currentFilter.tradeType = 'all';
+            } else if (type === 'sell') {
+                currentFilter.field = 'sellDate';
+                currentFilter.type = 'date';
+                currentFilter.date = today;
+                currentFilter.tradeType = 'all';
+            } else {
+                currentFilter.field = 'buyDate';
+                currentFilter.type = 'all';
+                currentFilter.date = '';
+                currentFilter.tradeType = 'all';
+            }
+            syncFilterUI();
+            renderHistoryModal();
+        }
+
+        // ============================================================
+        // 同步UI控件与currentFilter
+        // ============================================================
+        function syncFilterUI() {
+            document.getElementById('filterField').value = currentFilter.field;
+            document.getElementById('filterType').value = currentFilter.type;
+            document.getElementById('filterTradeType').value = currentFilter.tradeType;
+            document.getElementById('filterDate').value = currentFilter.date;
+            document.getElementById('filterYear').value = currentFilter.year;
+            document.getElementById('filterMonth').value = currentFilter.month;
+            // 显示/隐藏输入框
+            const type = currentFilter.type;
+            document.getElementById('filterYear').style.display = (type === 'year') ? 'inline-block' : 'none';
+            document.getElementById('filterMonth').style.display = (type === 'yearmonth') ? 'inline-block' : 'none';
+            document.getElementById('filterDate').style.display = (type === 'date') ? 'inline-block' : 'none';
+        }
+
+        // ============================================================
+        // 应用筛选（由控件变化自动触发或点击应用按钮触发）
+        // ============================================================
+        function applyFilter() {
+            const field = document.getElementById('filterField').value;
+            const type = document.getElementById('filterType').value;
+            const tradeType = document.getElementById('filterTradeType').value;
+            const year = document.getElementById('filterYear').value.trim();
+            const month = document.getElementById('filterMonth').value;
+            const date = document.getElementById('filterDate').value;
+
+            if (type === 'all') {
+                currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
+            } else if (type === 'year') {
+                if (!year || year.length !== 4 || isNaN(year)) {
+                    // 如果年份无效，保持原样或提示，这里简单保持
+                    // 但为了自动触发，我们不弹alert，而是保持当前筛选不变
+                    // 但这里可以静默忽略，或使用之前的有效值
+                    if (!currentFilter.year || currentFilter.year.length !== 4) {
+                        // 如果没有有效年份，回退到全部
+                        currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
+                    } else {
+                        // 保留旧的年份
+                        currentFilter = { field, type: 'year', year: currentFilter.year, month: '', date: '', tradeType };
+                    }
+                } else {
+                    currentFilter = { field, type: 'year', year, month: '', date: '', tradeType };
+                }
+            } else if (type === 'yearmonth') {
+                if (!month) {
+                    // 没有选年月，回退到全部
+                    currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
+                } else {
+                    currentFilter = { field, type: 'yearmonth', year: '', month, date: '', tradeType };
+                }
+            } else if (type === 'date') {
+                if (!date) {
+                    currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
+                } else {
+                    currentFilter = { field, type: 'date', year: '', month: '', date, tradeType };
+                }
+            }
+            syncFilterUI();
+            renderHistoryModal();
+        }
+
+        // ============================================================
+        // 筛选控件事件绑定（自动触发）
+        // ============================================================
+        function setupFilterEvents() {
+            const filterField = document.getElementById('filterField');
+            const filterType = document.getElementById('filterType');
+            const filterYear = document.getElementById('filterYear');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterDate = document.getElementById('filterDate');
+            const filterTradeType = document.getElementById('filterTradeType');
+            const filterApplyBtn = document.getElementById('filterApplyBtn');
+            const filterResetBtn = document.getElementById('filterResetBtn');
+
+            // 为所有筛选控件添加事件，变化时自动应用（除了年份/月份/日期输入，使用input事件）
+            const autoApplyElements = [filterField, filterType, filterTradeType];
+            autoApplyElements.forEach(el => {
+                el.addEventListener('change', applyFilter);
+            });
+
+            // 年份、月份、日期输入框变化时自动应用（使用input事件）
+            filterYear.addEventListener('input', applyFilter);
+            filterMonth.addEventListener('input', applyFilter);
+            filterDate.addEventListener('input', applyFilter);
+
+            // 显示/隐藏相应输入框（根据筛选方式）
+            filterType.addEventListener('change', function() {
+                const val = this.value;
+                filterYear.style.display = (val === 'year') ? 'inline-block' : 'none';
+                filterMonth.style.display = (val === 'yearmonth') ? 'inline-block' : 'none';
+                filterDate.style.display = (val === 'date') ? 'inline-block' : 'none';
+                // 清空不相关的输入
+                if (val !== 'year') filterYear.value = '';
+                if (val !== 'yearmonth') filterMonth.value = '';
+                if (val !== 'date') filterDate.value = '';
+                // 自动应用会在change事件中触发
+            });
+
+            // 重置按钮
+            filterResetBtn.addEventListener('click', function() {
+                filterType.value = 'all';
+                filterTradeType.value = 'all';
+                filterYear.style.display = 'none';
+                filterMonth.style.display = 'none';
+                filterDate.style.display = 'none';
+                filterYear.value = '';
+                filterMonth.value = '';
+                filterDate.value = '';
+                currentFilter = { field: filterField.value, type: 'all', year: '', month: '', date: '', tradeType: 'all' };
+                syncFilterUI();
+                renderHistoryModal();
+            });
+
+            // 应用按钮（保留，但自动触发后可能不常用，但仍可点击）
+            filterApplyBtn.addEventListener('click', applyFilter);
+
+            // 初始化显示
+            filterType.dispatchEvent(new Event('change'));
+        }
+
+        // ============================================================
+        // 弹窗渲染
         // ============================================================
         function renderHistoryModal() {
             const body = document.getElementById('modalBody');
@@ -1178,9 +2069,8 @@
                     headerHtml += `<th>${col.label}</th>`;
                 }
             });
-            headerHtml += '<th style="width:30px;text-align:center;">操作</th></tr>';
+            headerHtml += '<th style="width:80px;text-align:center;">操作</th></tr>';
 
-            // 合计行
             let totalHtml = '<tr class="total-row">';
             COLUMNS.forEach(col => {
                 if (visibleColumns[col.key]) {
@@ -1199,7 +2089,6 @@
             });
             totalHtml += '<td></td></tr>';
 
-            // 数据行
             let rowsHtml = '';
             const reversed = [...filtered].reverse();
             reversed.forEach((r, idx) => {
@@ -1219,8 +2108,11 @@
                         rowsHtml += `<td>${val}</td>`;
                     }
                 });
-                rowsHtml +=
-                    `<td style="text-align:center;"><button class="del-btn" data-index="${realIndex}" title="删除">🗑️</button></td>`;
+                rowsHtml += `<td style="text-align:center;white-space:nowrap;">
+                    <button class="update-btn" data-index="${realIndex}" title="更新">🔄</button>
+                    <button class="edit-btn" data-index="${realIndex}" title="编辑">✏️</button>
+                    <button class="del-btn" data-index="${realIndex}" title="删除">🗑️</button>
+                </td>`;
                 rowsHtml += '</tr>';
             });
 
@@ -1232,6 +2124,18 @@
             </tbody>
         </table>`;
 
+            body.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const idx = parseInt(this.dataset.index);
+                    updateRecord(idx);
+                });
+            });
+            body.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const idx = parseInt(this.dataset.index);
+                    editRecord(idx);
+                });
+            });
             body.querySelectorAll('.del-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     const idx = parseInt(this.dataset.index);
@@ -1241,7 +2145,7 @@
         }
 
         // ============================================================
-        // 列控制渲染
+        // 列控制渲染（支持持久化）
         // ============================================================
         function renderColControls() {
             const container = document.getElementById('colControl');
@@ -1254,6 +2158,7 @@
                 span.addEventListener('click', function() {
                     const key = this.dataset.key;
                     visibleColumns[key] = !visibleColumns[key];
+                    saveColumnVisibility();
                     renderColControls();
                     renderHistoryModal();
                 });
@@ -1265,15 +2170,7 @@
         // 弹窗打开/关闭
         // ============================================================
         function openModal() {
-            // 重置筛选条件
-            currentFilter = { field: 'buyDate', type: 'all', year: '', month: '' };
-            document.getElementById('filterField').value = 'buyDate';
-            document.getElementById('filterType').value = 'all';
-            document.getElementById('filterYear').style.display = 'none';
-            document.getElementById('filterMonth').style.display = 'none';
-            document.getElementById('filterYear').value = '';
-            document.getElementById('filterMonth').value = '';
-
+            syncFilterUI();
             renderColControls();
             renderHistoryModal();
             document.getElementById('historyModal').classList.add('active');
@@ -1286,64 +2183,7 @@
         }
 
         // ============================================================
-        // 筛选控件事件
-        // ============================================================
-        function setupFilterEvents() {
-            const filterField = document.getElementById('filterField');
-            const filterType = document.getElementById('filterType');
-            const filterYear = document.getElementById('filterYear');
-            const filterMonth = document.getElementById('filterMonth');
-
-            filterType.addEventListener('change', function() {
-                const val = this.value;
-                if (val === 'all') {
-                    filterYear.style.display = 'none';
-                    filterMonth.style.display = 'none';
-                } else if (val === 'year') {
-                    filterYear.style.display = 'inline-block';
-                    filterMonth.style.display = 'none';
-                } else if (val === 'yearmonth') {
-                    filterYear.style.display = 'none';
-                    filterMonth.style.display = 'inline-block';
-                }
-            });
-
-            document.getElementById('filterApplyBtn').addEventListener('click', function() {
-                const field = filterField.value;
-                const type = filterType.value;
-                if (type === 'all') {
-                    currentFilter = { field: field, type: 'all', year: '', month: '' };
-                } else if (type === 'year') {
-                    const year = filterYear.value.trim();
-                    if (!year || year.length !== 4 || isNaN(year)) {
-                        alert('请输入有效的年份（如2026）');
-                        return;
-                    }
-                    currentFilter = { field: field, type: 'year', year: year, month: '' };
-                } else if (type === 'yearmonth') {
-                    const month = filterMonth.value;
-                    if (!month) {
-                        alert('请选择年月');
-                        return;
-                    }
-                    currentFilter = { field: field, type: 'yearmonth', year: '', month: month };
-                }
-                renderHistoryModal();
-            });
-
-            document.getElementById('filterResetBtn').addEventListener('click', function() {
-                filterType.value = 'all';
-                filterYear.style.display = 'none';
-                filterMonth.style.display = 'none';
-                filterYear.value = '';
-                filterMonth.value = '';
-                currentFilter = { field: filterField.value, type: 'all', year: '', month: '' };
-                renderHistoryModal();
-            });
-        }
-
-        // ============================================================
-        // 净值获取核心（与之前相同）
+        // 净值获取核心
         // ============================================================
         function fetchNetValueOnDate(fundCode, targetDate) {
             return new Promise((resolve, reject) => {
@@ -1373,11 +2213,16 @@
                         for (const row of rows) {
                             if (row.includes(`<td>${targetDate}</td>`)) {
                                 const cells = row.match(/<td[^>]*>(.*?)<\/td>/g);
-                                if (cells && cells.length >= 2) {
-                                    const valStr = cells[1].replace(/<[^>]+>/g, '').trim();
-                                    const val = parseFloat(valStr);
-                                    if (!isNaN(val)) { cleanup();
-                                        resolve(val); return; }
+                                if (cells && cells.length >= 3) {
+                                    const unitStr = cells[1].replace(/<[^>]+>/g, '').trim();
+                                    const accStr = cells[2].replace(/<[^>]+>/g, '').trim();
+                                    const unitNav = parseFloat(unitStr);
+                                    const accNav = parseFloat(accStr);
+                                    if (!isNaN(unitNav) && !isNaN(accNav)) {
+                                        cleanup();
+                                        resolve({ unitNav, accNav });
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -1398,7 +2243,15 @@
         }
 
         // ============================================================
-        // 获取并设置卖出净值（与买入完全一致：绿色高亮+状态）
+        // 存储买入和卖出时的单位净值与累计净值
+        // ============================================================
+        let buyUnitNav = null;
+        let buyAccNav = null;
+        let sellUnitNav = null;
+        let sellAccNav = null;
+
+        // ============================================================
+        // 获取并设置卖出净值
         // ============================================================
         async function fetchAndSetSellPrice(fundCode, sellDate) {
             const sellPriceInput = document.getElementById('sellPrice');
@@ -1407,6 +2260,8 @@
             if (!fundCode || !sellDate) {
                 sellPriceInput.value = '';
                 sellGroup.classList.remove('highlight-success');
+                sellUnitNav = null;
+                sellAccNav = null;
                 calculate();
                 saveToLocalStorage();
                 setStatus('请填写基金代码和卖出日期', '');
@@ -1414,16 +2269,21 @@
             }
 
             try {
-                const nav = await fetchNetValueOnDate(fundCode, sellDate);
-                sellPriceInput.value = nav;
+                const { unitNav, accNav } = await fetchNetValueOnDate(fundCode, sellDate);
+                sellPriceInput.value = unitNav;
+                sellUnitNav = unitNav;
+                sellAccNav = accNav;
                 sellGroup.classList.add('highlight-success');
                 setTimeout(() => sellGroup.classList.remove('highlight-success'), 2500);
-                setStatus(`✅ ${sellDate} 净值 ${nav} 已填入卖出净值`, 'success');
+                setStatus(`✅ ${sellDate} 单位净值 ${unitNav}，累计净值 ${accNav}`, 'success');
                 calculate();
                 saveToLocalStorage();
+                updateDividendFromNav();
             } catch (err) {
                 sellPriceInput.value = '';
                 sellGroup.classList.remove('highlight-success');
+                sellUnitNav = null;
+                sellAccNav = null;
                 calculate();
                 saveToLocalStorage();
                 setStatus(`❌ ${sellDate} 无净值数据`, 'error');
@@ -1439,6 +2299,69 @@
                 const sellDate = document.getElementById('sellDate').value;
                 fetchAndSetSellPrice(fundCode, sellDate);
             }, 500);
+        }
+
+        // ============================================================
+        // 买入净值自动获取
+        // ============================================================
+        async function autoFetchHistorical() {
+            const fundCode = document.getElementById('fundCode').value.trim();
+            const date = document.getElementById('buyDate').value;
+            const buyGroup = document.getElementById('buyGroup');
+
+            if (!fundCode || !date) {
+                document.getElementById('buyPrice').value = '';
+                buyGroup.classList.remove('highlight-success');
+                buyUnitNav = null;
+                buyAccNav = null;
+                calculate();
+                setStatus('请填写基金代码和买入日期', '');
+                return;
+            }
+
+            setStatus(`⏳ 获取 ${date} 净值...`);
+            try {
+                const { unitNav, accNav } = await fetchNetValueOnDate(fundCode, date);
+                document.getElementById('buyPrice').value = unitNav;
+                buyUnitNav = unitNav;
+                buyAccNav = accNav;
+                buyGroup.classList.add('highlight-success');
+                setTimeout(() => buyGroup.classList.remove('highlight-success'), 2500);
+                setStatus(`✅ ${date} 单位净值 ${unitNav}，累计净值 ${accNav}`, 'success');
+                calculate();
+                saveToLocalStorage();
+                updateDividendFromNav();
+            } catch (err) {
+                document.getElementById('buyPrice').value = '';
+                buyGroup.classList.remove('highlight-success');
+                buyUnitNav = null;
+                buyAccNav = null;
+                calculate();
+                saveToLocalStorage();
+                setStatus(`⚠️ ${date} 无净值数据`, 'warning');
+            }
+        }
+
+        // ============================================================
+        // 通过累计净值计算分红
+        // ============================================================
+        function updateDividendFromNav() {
+            if (buyUnitNav === null || buyAccNav === null || sellUnitNav === null || sellAccNav === null) {
+                return;
+            }
+
+            let dividend = (sellAccNav - buyAccNav) - (sellUnitNav - buyUnitNav);
+            dividend = dividend > 0 ? Number(dividend.toFixed(4)) : 0;
+
+            document.getElementById('dividendPrice').value = dividend;
+
+            if (dividend > 0) {
+                setStatus(`✅ 分红净值已自动计算 (累计 ${dividend.toFixed(4)})`, 'success');
+            } else {
+                setStatus(`✅ 区间内无分红`, 'success');
+            }
+
+            calculate();
         }
 
         // ============================================================
@@ -1592,40 +2515,6 @@
         });
 
         // ============================================================
-        // 买入净值自动获取
-        // ============================================================
-        async function autoFetchHistorical() {
-            const fundCode = document.getElementById('fundCode').value.trim();
-            const date = document.getElementById('buyDate').value;
-            const buyGroup = document.getElementById('buyGroup');
-
-            if (!fundCode || !date) {
-                document.getElementById('buyPrice').value = '';
-                buyGroup.classList.remove('highlight-success');
-                calculate();
-                setStatus('请填写基金代码和买入日期', '');
-                return;
-            }
-
-            setStatus(`⏳ 获取 ${date} 净值...`);
-            try {
-                const nav = await fetchNetValueOnDate(fundCode, date);
-                document.getElementById('buyPrice').value = nav;
-                buyGroup.classList.add('highlight-success');
-                setTimeout(() => buyGroup.classList.remove('highlight-success'), 2500);
-                setStatus(`✅ ${date} 净值 ${nav} 已填入买入净值`, 'success');
-                calculate();
-                saveToLocalStorage();
-            } catch (err) {
-                document.getElementById('buyPrice').value = '';
-                buyGroup.classList.remove('highlight-success');
-                calculate();
-                saveToLocalStorage();
-                setStatus(`⚠️ ${date} 无净值数据`, 'warning');
-            }
-        }
-
-        // ============================================================
         // 按钮事件
         // ============================================================
         const sellGroup = document.getElementById('sellGroup');
@@ -1656,16 +2545,21 @@
             setStatus(`⏳ 获取 ${date} 净值...`);
             const buyGroup = document.getElementById('buyGroup');
             try {
-                const nav = await fetchNetValueOnDate(fundCode, date);
-                document.getElementById('buyPrice').value = nav;
+                const { unitNav, accNav } = await fetchNetValueOnDate(fundCode, date);
+                document.getElementById('buyPrice').value = unitNav;
+                buyUnitNav = unitNav;
+                buyAccNav = accNav;
                 buyGroup.classList.add('highlight-success');
                 setTimeout(() => buyGroup.classList.remove('highlight-success'), 2500);
-                setStatus(`✅ ${date} 净值 ${nav} 已填入买入净值`, 'success');
+                setStatus(`✅ ${date} 单位净值 ${unitNav}，累计净值 ${accNav}`, 'success');
                 calculate();
                 saveToLocalStorage();
+                updateDividendFromNav();
             } catch (err) {
                 document.getElementById('buyPrice').value = '';
                 buyGroup.classList.remove('highlight-success');
+                buyUnitNav = null;
+                buyAccNav = null;
                 calculate();
                 saveToLocalStorage();
                 setStatus('❌ ' + err.message, 'error');
@@ -1711,7 +2605,6 @@
         document.getElementById('sellDate').addEventListener('input', function() {
             calculate();
             saveToLocalStorage();
-            autoFetchSellDebounced();
         });
 
         document.getElementById('buyDate').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById(
@@ -1744,18 +2637,139 @@
                 if (historyRecords.length === 0) {
                     document.getElementById('modalBody').innerHTML = '<div class="empty-msg">暂无记录</div>';
                 }
+                showTodaySettlementAlert();
             }
         });
 
-        document.getElementById('saveHistoryBtn').addEventListener('click', saveCurrentRecord);
+        document.getElementById('saveHistoryBtn').addEventListener('click', function() {
+            const record = saveCurrentRecord();
+            copyRecordToClipboard(record);
+        });
 
-        // 初始化筛选控件
+        // ============================================================
+        // 编辑弹窗事件
+        // ============================================================
+        document.getElementById('editModalCloseBtn').addEventListener('click', closeEditModal);
+        document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+        document.getElementById('editSaveBtn').addEventListener('click', saveEditedRecord);
+
+        // ============================================================
+        // 快速筛选标签事件
+        // ============================================================
+        document.getElementById('qfTodayBuy').addEventListener('click', function() {
+            applyQuickFilter('buy');
+        });
+        document.getElementById('qfTodaySell').addEventListener('click', function() {
+            applyQuickFilter('sell');
+        });
+        document.getElementById('qfClear').addEventListener('click', function() {
+            applyQuickFilter('clear');
+        });
+
+        // ============================================================
+        // 筛选控件事件（自动触发）
+        // ============================================================
         setupFilterEvents();
+
+        // ============================================================
+        // ========== 使用教程功能 ==========
+        // ============================================================
+        const tutorialModal = document.getElementById('tutorialModal');
+        const tutorialTrigger = document.getElementById('tutorialTriggerBtn');
+        const tutorialClose = document.getElementById('tutorialCloseBtn');
+
+        function openTutorial() {
+            tutorialModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTutorial() {
+            tutorialModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        tutorialTrigger.addEventListener('click', openTutorial);
+        tutorialClose.addEventListener('click', closeTutorial);
+        tutorialModal.addEventListener('click', function(e) {
+            if (e.target === this) closeTutorial();
+        });
+
+        function checkFirstVisit() {
+            try {
+                const shown = localStorage.getItem(TUTORIAL_SHOWN_KEY);
+                if (!shown) {
+                    setTimeout(openTutorial, 600);
+                    localStorage.setItem(TUTORIAL_SHOWN_KEY, 'true');
+                }
+            } catch (e) {}
+        }
+
+        // ============================================================
+        // “自动登记”按钮功能
+        // ============================================================
+        document.getElementById('autoRegisterBtn').addEventListener('click', async function() {
+            const fundCode = document.getElementById('fundCode').value.trim();
+            if (!fundCode) {
+                setStatus('❌ 请先填写基金代码再进行自动登记', 'error');
+                return;
+            }
+
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const isAfterClose = (hour > 15) || (hour === 15 && minute > 0);
+
+            let buyDate, sellDate;
+
+            if (isTradingDay(now) && !isAfterClose) {
+                buyDate = new Date(now);
+            } else {
+                let d = new Date(now);
+                d.setDate(d.getDate() + 1);
+                buyDate = nextTradingDay(d);
+            }
+
+            let sellCandidate = new Date(buyDate);
+            sellCandidate.setDate(sellCandidate.getDate() + 7);
+            sellDate = nextTradingDay(sellCandidate);
+
+            const formatDate = (d) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            };
+            const buyDateStr = formatDate(buyDate);
+            const sellDateStr = formatDate(sellDate);
+
+            document.getElementById('buyDate').value = buyDateStr;
+            document.getElementById('sellDate').value = sellDateStr;
+
+            try {
+                await autoFetchHistorical();
+            } catch (e) {}
+
+            try {
+                await fetchAndSetSellPrice(fundCode, sellDateStr);
+            } catch (e) {}
+
+            setTimeout(() => {
+                const record = saveCurrentRecord();
+                setStatus(`✅ 自动登记完成！买入 ${buyDateStr}，卖出 ${sellDateStr}`, 'success');
+                copyRecordToClipboard(record);
+                showTodaySettlementAlert();
+            }, 500);
+        });
 
         // ============================================================
         // 初始化
         // ============================================================
         window.addEventListener('DOMContentLoaded', function() {
+            initTradeType();
+
             loadFromLocalStorage();
             setDateToSevenDaysAgo();
             setSellDateToToday();
@@ -1773,7 +2787,8 @@
                 setTimeout(autoFetchSellDebounced, 800);
             }
 
-            setStatus('💡 修改日期或基金代码自动获取净值', '');
+            showTodaySettlementAlert();
+            checkFirstVisit();
         });
     </script>
 </body>
