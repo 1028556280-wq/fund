@@ -1153,6 +1153,12 @@
             <span id="fundNameDisplay" class="fund-name">—</span>
         </div>
 
+        <!-- 交易对象 -->
+        <div class="net-input-group">
+            <label>交易对象</label>
+            <input type="text" id="tradeTarget" placeholder="输入交易对象" inputmode="text" lang="zh-CN">
+        </div>
+
         <!-- ===== 自动登记按钮行 ===== -->
         <div class="auto-register-row">
             <button class="btn-auto-register" id="autoRegisterBtn">📋 自动登记</button>
@@ -1194,12 +1200,6 @@
             <input type="number" id="dividendPrice" placeholder="0" step="any" readonly style="color:#555; background:#f0f2f5; cursor:not-allowed;">
         </div>
 
-        <!-- 交易对象 -->
-        <div class="net-input-group">
-            <label>交易对象</label>
-            <input type="text" id="tradeTarget" placeholder="输入交易对象" inputmode="text" lang="zh-CN">
-        </div>
-
         <!-- 结果 -->
         <div class="result-area">
             <div class="result-item">
@@ -1218,6 +1218,15 @@
             <button class="btn-view-history" id="viewHistoryBtn">📋 查看记录</button>
             <span class="history-count" id="historyCount">📂 0 条</span>
         </div>
+
+        <!-- ===== 新增：备份与同步区域 ===== -->
+        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+            <button class="btn-save" id="exportBackupBtn" style="flex:1; background: linear-gradient(135deg, #f6b83d, #e6a020); box-shadow: 0 4px 12px rgba(246,184,61,0.25);">📤 导出备份</button>
+            <button class="btn-view-history" id="importBackupBtn" style="flex:1; background: linear-gradient(135deg, #8a9bb5, #6a7b95); box-shadow: 0 4px 12px rgba(138,155,181,0.25);">📥 导入备份</button>
+            <button class="btn-fetch latest" id="genSyncLinkBtn" style="flex:1; background: linear-gradient(135deg, #9b59b6, #8e44ad); box-shadow: 0 4px 12px rgba(155,89,182,0.25);">🔗 生成同步链接</button>
+            <input type="file" id="importFileInput" accept=".json" style="display:none;">
+        </div>
+        <!-- ===== 新增结束 ===== -->
 
         <div class="hint">所有输入自动计算 · 数据保存在本地</div>
     </div>
@@ -2765,6 +2774,172 @@
         });
 
         // ============================================================
+        // ===== 新增：跨设备备份与同步功能 =====
+        // ============================================================
+
+        // 1. 导出备份（下载 JSON 文件）
+        document.getElementById('exportBackupBtn').addEventListener('click', function() {
+            if (historyRecords.length === 0) {
+                setStatus('⚠️ 暂无记录可导出', 'warning');
+                return;
+            }
+            const jsonStr = JSON.stringify(historyRecords, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10);
+            link.download = `基金记录_${dateStr}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            setStatus(`✅ 已导出 ${historyRecords.length} 条记录`, 'success');
+        });
+
+        // 2. 导入备份（点击触发文件选择器）
+        document.getElementById('importBackupBtn').addEventListener('click', function() {
+            document.getElementById('importFileInput').click();
+        });
+
+        document.getElementById('importFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (!Array.isArray(imported)) {
+                        setStatus('❌ 导入失败：文件格式错误（非数组）', 'error');
+                        return;
+                    }
+                    if (imported.length === 0) {
+                        setStatus('⚠️ 文件为空，无数据可导入', 'warning');
+                        return;
+                    }
+                    // 询问用户是覆盖还是合并（默认合并，去重防重）
+                    const choice = confirm(`检测到 ${imported.length} 条记录。\n点击「确定」合并（不覆盖现有记录，仅追加新数据）\n点击「取消」完全覆盖当前数据`);
+                    if (!choice) {
+                        // 覆盖
+                        historyRecords = imported;
+                    } else {
+                        // 合并（基于时间戳去重，简单处理：用 JSON.stringify 比较）
+                        const existingSet = new Set(historyRecords.map(r => JSON.stringify(r)));
+                        let addedCount = 0;
+                        imported.forEach(r => {
+                            const key = JSON.stringify(r);
+                            if (!existingSet.has(key)) {
+                                historyRecords.push(r);
+                                existingSet.add(key);
+                                addedCount++;
+                            }
+                        });
+                        setStatus(`✅ 合并完成，新增 ${addedCount} 条，总计 ${historyRecords.length} 条`, 'success');
+                    }
+                    saveHistoryToStorage();
+                    if (document.getElementById('historyModal').classList.contains('active')) {
+                        renderHistoryModal();
+                    }
+                    showTodaySettlementAlert();
+                    setStatus(`✅ 数据导入成功，当前共 ${historyRecords.length} 条记录`, 'success');
+                } catch (err) {
+                    setStatus('❌ 导入失败：' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+            // 清空 input 以允许重复选择同一文件
+            e.target.value = '';
+        });
+
+        // 3. 生成同步链接（使用 LZString 压缩编码）
+        // 加载 LZString 库（CDN）
+        function loadLZString(callback) {
+            if (typeof LZString !== 'undefined') {
+                callback();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js';
+            script.onload = callback;
+            document.head.appendChild(script);
+        }
+
+        document.getElementById('genSyncLinkBtn').addEventListener('click', function() {
+            if (historyRecords.length === 0) {
+                setStatus('⚠️ 暂无记录，无法生成同步链接', 'warning');
+                return;
+            }
+            loadLZString(function() {
+                try {
+                    const json = JSON.stringify(historyRecords);
+                    const compressed = LZString.compressToEncodedURIComponent(json);
+                    // 构建当前页面的完整 URL，带上 #sync= 参数
+                    const baseUrl = window.location.href.split('#')[0];
+                    const syncUrl = baseUrl + '#sync=' + compressed;
+
+                    // 复制到剪贴板
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(syncUrl).then(() => {
+                            setStatus('✅ 同步链接已复制到剪贴板！在手机打开即可导入', 'success');
+                        }).catch(() => {
+                            fallbackCopy(syncUrl);
+                        });
+                    } else {
+                        fallbackCopy(syncUrl);
+                    }
+
+                    // 同时弹窗显示链接（方便手动复制/生成二维码）
+                    alert('📋 同步链接已生成并复制到剪贴板！\n\n请在手机浏览器中打开此链接，页面会自动识别并导入数据。\n\n（若链接过长，建议通过微信/QQ发送）');
+                } catch (e) {
+                    setStatus('❌ 生成链接失败：' + e.message, 'error');
+                }
+            });
+        });
+
+        // 4. 页面启动时自动检测 URL 中的同步数据
+        function checkSyncFromURL() {
+            const hash = window.location.hash;
+            if (!hash || !hash.startsWith('#sync=')) return;
+
+            loadLZString(function() {
+                try {
+                    const compressed = hash.substring(6); // 去掉 '#sync='
+                    const json = LZString.decompressFromEncodedURIComponent(compressed);
+                    if (!json) {
+                        console.warn('同步数据解码失败');
+                        return;
+                    }
+                    const imported = JSON.parse(json);
+                    if (!Array.isArray(imported) || imported.length === 0) return;
+
+                    // 弹出提示，询问是否导入
+                    if (confirm(`📦 检测到通过链接传递的 ${imported.length} 条数据。\n点击「确定」合并到本地，点击「取消」忽略。`)) {
+                        const existingSet = new Set(historyRecords.map(r => JSON.stringify(r)));
+                        let addedCount = 0;
+                        imported.forEach(r => {
+                            const key = JSON.stringify(r);
+                            if (!existingSet.has(key)) {
+                                historyRecords.push(r);
+                                existingSet.add(key);
+                                addedCount++;
+                            }
+                        });
+                        saveHistoryToStorage();
+                        if (document.getElementById('historyModal').classList.contains('active')) {
+                            renderHistoryModal();
+                        }
+                        showTodaySettlementAlert();
+                        setStatus(`✅ 从同步链接成功导入 ${addedCount} 条新记录，总计 ${historyRecords.length} 条`, 'success');
+                        // 清除 hash 以免刷新重复导入
+                        history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                } catch (e) {
+                    console.warn('同步链接解析失败:', e);
+                }
+            });
+        }
+
+        // ============================================================
         // 初始化
         // ============================================================
         window.addEventListener('DOMContentLoaded', function() {
@@ -2789,6 +2964,9 @@
 
             showTodaySettlementAlert();
             checkFirstVisit();
+
+            // 检测URL同步链接
+            setTimeout(checkSyncFromURL, 800);
         });
     </script>
 </body>
