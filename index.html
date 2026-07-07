@@ -604,6 +604,40 @@
             border-color: #4A90D9;
         }
 
+        /* ===== 新增排序控制 ===== */
+        .sort-control {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .sort-control label {
+            font-size: 12px;
+            color: #5a6e8a;
+            font-weight: 600;
+        }
+        .sort-control .qf-btn {
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid #dce2ea;
+            background: #f5f8fe;
+            font-size: 12px;
+            font-weight: 600;
+            color: #5a6e8a;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .sort-control .qf-btn:hover {
+            background: #e8edf5;
+        }
+        .sort-control .qf-btn.active {
+            background: #4A90D9;
+            color: #fff;
+            border-color: #4A90D9;
+        }
+
         .filter-section {
             display: flex;
             flex-wrap: wrap;
@@ -1027,6 +1061,10 @@
                 font-size: 11px;
                 padding: 3px 10px;
             }
+            .sort-control .qf-btn {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
         }
         @media (max-width: 380px) {
             .input-group label {
@@ -1088,6 +1126,10 @@
                 font-size: 10px;
                 padding: 2px 8px;
             }
+            .sort-control .qf-btn {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
             .alert-bar {
                 font-size: 11px;
                 min-height: 18px;
@@ -1137,26 +1179,26 @@
         <!-- 金额 -->
         <div class="input-group">
             <label>金额(元)</label>
-            <input type="number" id="amount" placeholder="20000" step="any">
+            <input type="number" id="amount" step="any" placeholder="">
         </div>
 
         <!-- 红包 -->
         <div class="input-group">
             <label>红包(千分之)</label>
-            <input type="number" id="bonusRate" placeholder="0.8" step="any">
+            <input type="number" id="bonusRate" step="any" placeholder="">
         </div>
 
         <!-- 基金代码 -->
         <div class="input-group">
             <label>基金代码</label>
-            <input type="text" id="fundCode" placeholder="110022" class="fund-code-input">
+            <input type="text" id="fundCode" class="fund-code-input" placeholder="">
             <span id="fundNameDisplay" class="fund-name">—</span>
         </div>
 
         <!-- 交易对象 -->
         <div class="net-input-group">
             <label>交易对象</label>
-            <input type="text" id="tradeTarget" placeholder="输入交易对象" inputmode="text" lang="zh-CN">
+            <input type="text" id="tradeTarget" inputmode="text" lang="zh-CN" placeholder="">
         </div>
 
         <!-- ===== 自动登记按钮行 ===== -->
@@ -1187,17 +1229,17 @@
         <!-- 净值输入 -->
         <div class="net-input-group" id="buyGroup">
             <label>买入净值</label>
-            <input type="number" id="buyPrice" placeholder="1.2888" step="any">
+            <input type="number" id="buyPrice" step="any" placeholder="">
         </div>
         <div class="net-input-group" id="sellGroup">
             <label>卖出净值</label>
-            <input type="number" id="sellPrice" placeholder="1.2762" step="any">
+            <input type="number" id="sellPrice" step="any" placeholder="">
         </div>
 
         <!-- 分红净值（只读） -->
         <div class="net-input-group">
             <label>分红净值</label>
-            <input type="number" id="dividendPrice" placeholder="0" step="any" readonly style="color:#555; background:#f0f2f5; cursor:not-allowed;">
+            <input type="number" id="dividendPrice" step="any" readonly style="color:#555; background:#f0f2f5; cursor:not-allowed;" placeholder="">
         </div>
 
         <!-- 结果 -->
@@ -1243,6 +1285,14 @@
                 <button class="qf-btn" id="qfTodaySell" data-type="sell">📅 今日卖出</button>
                 <button class="qf-btn" id="qfClear" style="background:transparent; border-color:transparent; color:#8a9bb5;">清除筛选</button>
             </div>
+
+            <!-- ===== 新增排序控制 ===== -->
+            <div class="sort-control">
+                <label>排序：</label>
+                <button class="qf-btn active" id="sortDefaultBtn">默认顺序</button>
+                <button class="qf-btn" id="sortSellDateDescBtn">卖出日期倒序</button>
+            </div>
+
             <div class="filter-section" id="filterSection">
                 <label>筛选字段：</label>
                 <select id="filterField">
@@ -1265,7 +1315,6 @@
                     <option value="收包">收包</option>
                     <option value="卖包">卖包</option>
                 </select>
-                <!-- 应用按钮保留，但自动触发后实际上点击它会再次应用（无影响） -->
                 <button class="filter-btn" id="filterApplyBtn">应用</button>
                 <button class="filter-btn" id="filterResetBtn" style="background:#8a9bb5;">重置</button>
             </div>
@@ -1326,7 +1375,8 @@
                 <ul>
                     <li>点击「📋 查看记录」打开历史列表，支持：<br>
                         • <span class="highlight">快速筛选</span>：今日买入 / 今日卖出<br>
-                        • <span class="highlight">高级筛选</span>：按年/年月/具体日期筛选买入或卖出日期，<strong>选择即生效</strong><br>
+                        • <span class="highlight">高级筛选</span>：按年/年月/具体日期筛选买入或卖出日期，需点击「应用」生效<br>
+                        • <span class="highlight">排序切换</span>：默认按记录顺序，可切换为按卖出日期倒序<br>
                         • <span class="highlight">列显示控制</span>：点击列标签可隐藏/显示，状态自动保存<br>
                         • 每条记录支持 <span class="highlight">更新</span>（重新获取净值）、<span class="highlight">编辑</span>（手动修改）、<span class="highlight">删除</span>
                     </li>
@@ -1439,6 +1489,9 @@
             date: '',
             tradeType: 'all'
         };
+
+        // 当前排序方式
+        let currentSort = 'default'; // 'default' 或 'sellDateDesc'
 
         // ============================================================
         // 历史记录管理
@@ -1913,7 +1966,7 @@
         }
 
         // ============================================================
-        // 快速筛选功能
+        // 快速筛选功能（自动应用）
         // ============================================================
         function applyQuickFilter(type) {
             const today = new Date().toISOString().slice(0, 10);
@@ -1955,7 +2008,7 @@
         }
 
         // ============================================================
-        // 应用筛选（由控件变化自动触发或点击应用按钮触发）
+        // 应用筛选（点击“应用”按钮触发）
         // ============================================================
         function applyFilter() {
             const field = document.getElementById('filterField').value;
@@ -1968,23 +2021,14 @@
             if (type === 'all') {
                 currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
             } else if (type === 'year') {
+                // 年份必须为4位数字，否则回退到全部
                 if (!year || year.length !== 4 || isNaN(year)) {
-                    // 如果年份无效，保持原样或提示，这里简单保持
-                    // 但为了自动触发，我们不弹alert，而是保持当前筛选不变
-                    // 但这里可以静默忽略，或使用之前的有效值
-                    if (!currentFilter.year || currentFilter.year.length !== 4) {
-                        // 如果没有有效年份，回退到全部
-                        currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
-                    } else {
-                        // 保留旧的年份
-                        currentFilter = { field, type: 'year', year: currentFilter.year, month: '', date: '', tradeType };
-                    }
+                    currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
                 } else {
                     currentFilter = { field, type: 'year', year, month: '', date: '', tradeType };
                 }
             } else if (type === 'yearmonth') {
                 if (!month) {
-                    // 没有选年月，回退到全部
                     currentFilter = { field, type: 'all', year: '', month: '', date: '', tradeType };
                 } else {
                     currentFilter = { field, type: 'yearmonth', year: '', month, date: '', tradeType };
@@ -2001,70 +2045,70 @@
         }
 
         // ============================================================
-        // 筛选控件事件绑定（自动触发）
+        // 筛选控件事件绑定（只绑定“应用”按钮，其他控件不自动触发）
         // ============================================================
         function setupFilterEvents() {
-            const filterField = document.getElementById('filterField');
+            const filterApplyBtn = document.getElementById('filterApplyBtn');
+            const filterResetBtn = document.getElementById('filterResetBtn');
             const filterType = document.getElementById('filterType');
             const filterYear = document.getElementById('filterYear');
             const filterMonth = document.getElementById('filterMonth');
             const filterDate = document.getElementById('filterDate');
-            const filterTradeType = document.getElementById('filterTradeType');
-            const filterApplyBtn = document.getElementById('filterApplyBtn');
-            const filterResetBtn = document.getElementById('filterResetBtn');
 
-            // 为所有筛选控件添加事件，变化时自动应用（除了年份/月份/日期输入，使用input事件）
-            const autoApplyElements = [filterField, filterType, filterTradeType];
-            autoApplyElements.forEach(el => {
-                el.addEventListener('change', applyFilter);
-            });
+            // 点击“应用”按钮执行筛选
+            filterApplyBtn.addEventListener('click', applyFilter);
 
-            // 年份、月份、日期输入框变化时自动应用（使用input事件）
-            filterYear.addEventListener('input', applyFilter);
-            filterMonth.addEventListener('input', applyFilter);
-            filterDate.addEventListener('input', applyFilter);
-
-            // 显示/隐藏相应输入框（根据筛选方式）
-            filterType.addEventListener('change', function() {
-                const val = this.value;
-                filterYear.style.display = (val === 'year') ? 'inline-block' : 'none';
-                filterMonth.style.display = (val === 'yearmonth') ? 'inline-block' : 'none';
-                filterDate.style.display = (val === 'date') ? 'inline-block' : 'none';
-                // 清空不相关的输入
-                if (val !== 'year') filterYear.value = '';
-                if (val !== 'yearmonth') filterMonth.value = '';
-                if (val !== 'date') filterDate.value = '';
-                // 自动应用会在change事件中触发
-            });
-
-            // 重置按钮
+            // 重置按钮：清空筛选条件并恢复默认
             filterResetBtn.addEventListener('click', function() {
+                document.getElementById('filterField').value = 'buyDate';
                 filterType.value = 'all';
-                filterTradeType.value = 'all';
+                document.getElementById('filterTradeType').value = 'all';
                 filterYear.style.display = 'none';
                 filterMonth.style.display = 'none';
                 filterDate.style.display = 'none';
                 filterYear.value = '';
                 filterMonth.value = '';
                 filterDate.value = '';
-                currentFilter = { field: filterField.value, type: 'all', year: '', month: '', date: '', tradeType: 'all' };
+                currentFilter = { field: 'buyDate', type: 'all', year: '', month: '', date: '', tradeType: 'all' };
                 syncFilterUI();
                 renderHistoryModal();
             });
 
-            // 应用按钮（保留，但自动触发后可能不常用，但仍可点击）
-            filterApplyBtn.addEventListener('click', applyFilter);
+            // 当“方式”变化时，显示对应的输入框（仅界面交互，不触发筛选）
+            filterType.addEventListener('change', function() {
+                const val = this.value;
+                filterYear.style.display = (val === 'year') ? 'inline-block' : 'none';
+                filterMonth.style.display = (val === 'yearmonth') ? 'inline-block' : 'none';
+                filterDate.style.display = (val === 'date') ? 'inline-block' : 'none';
+                if (val !== 'year') filterYear.value = '';
+                if (val !== 'yearmonth') filterMonth.value = '';
+                if (val !== 'date') filterDate.value = '';
+            });
 
             // 初始化显示
             filterType.dispatchEvent(new Event('change'));
         }
 
         // ============================================================
-        // 弹窗渲染
+        // 弹窗渲染（包含排序逻辑）
         // ============================================================
         function renderHistoryModal() {
             const body = document.getElementById('modalBody');
-            const filtered = filterRecords(historyRecords);
+            let filtered = filterRecords(historyRecords);
+
+            // 根据当前排序方式排序
+            if (currentSort === 'sellDateDesc') {
+                filtered.sort((a, b) => {
+                    const dateA = a.sellDate || '';
+                    const dateB = b.sellDate || '';
+                    if (dateA === '' && dateB === '') return 0;
+                    if (dateA === '') return 1;
+                    if (dateB === '') return -1;
+                    return dateB.localeCompare(dateA); // 倒序
+                });
+            }
+            // 默认不排序，保持原数组顺序（即记录添加顺序）
+
             const totals = calculateTotals(filtered);
 
             if (filtered.length === 0) {
@@ -2099,8 +2143,7 @@
             totalHtml += '<td></td></tr>';
 
             let rowsHtml = '';
-            const reversed = [...filtered].reverse();
-            reversed.forEach((r, idx) => {
+            filtered.forEach((r, idx) => {
                 const realIndex = historyRecords.indexOf(r);
                 rowsHtml += '<tr>';
                 COLUMNS.forEach(col => {
@@ -2184,11 +2227,41 @@
             renderHistoryModal();
             document.getElementById('historyModal').classList.add('active');
             document.body.style.overflow = 'hidden';
+            // 更新排序按钮状态
+            updateSortButtonUI();
         }
 
         function closeModal() {
             document.getElementById('historyModal').classList.remove('active');
             document.body.style.overflow = '';
+        }
+
+        // ============================================================
+        // 排序按钮UI更新与事件绑定
+        // ============================================================
+        function updateSortButtonUI() {
+            const defaultBtn = document.getElementById('sortDefaultBtn');
+            const descBtn = document.getElementById('sortSellDateDescBtn');
+            if (currentSort === 'default') {
+                defaultBtn.classList.add('active');
+                descBtn.classList.remove('active');
+            } else {
+                defaultBtn.classList.remove('active');
+                descBtn.classList.add('active');
+            }
+        }
+
+        function setupSortControls() {
+            document.getElementById('sortDefaultBtn').addEventListener('click', function() {
+                currentSort = 'default';
+                updateSortButtonUI();
+                renderHistoryModal();
+            });
+            document.getElementById('sortSellDateDescBtn').addEventListener('click', function() {
+                currentSort = 'sellDateDesc';
+                updateSortButtonUI();
+                renderHistoryModal();
+            });
         }
 
         // ============================================================
@@ -2352,17 +2425,19 @@
         }
 
         // ============================================================
-        // 通过累计净值计算分红
+        // 通过累计净值计算分红（若净值不全则清空）
         // ============================================================
         function updateDividendFromNav() {
+            const dividendInput = document.getElementById('dividendPrice');
             if (buyUnitNav === null || buyAccNav === null || sellUnitNav === null || sellAccNav === null) {
+                dividendInput.value = '';
                 return;
             }
 
             let dividend = (sellAccNav - buyAccNav) - (sellUnitNav - buyUnitNav);
             dividend = dividend > 0 ? Number(dividend.toFixed(4)) : 0;
 
-            document.getElementById('dividendPrice').value = dividend;
+            dividendInput.value = dividend;
 
             if (dividend > 0) {
                 setStatus(`✅ 分红净值已自动计算 (累计 ${dividend.toFixed(4)})`, 'success');
@@ -2374,7 +2449,7 @@
         }
 
         // ============================================================
-        // 计算函数
+        // 计算函数（分红净值空值处理）
         // ============================================================
         function calculate() {
             const amount = parseFloat(document.getElementById('amount').value) || 0;
@@ -2679,9 +2754,14 @@
         });
 
         // ============================================================
-        // 筛选控件事件（自动触发）
+        // 筛选控件事件（手动应用）
         // ============================================================
         setupFilterEvents();
+
+        // ============================================================
+        // 排序控件事件
+        // ============================================================
+        setupSortControls();
 
         // ============================================================
         // ========== 使用教程功能 ==========
