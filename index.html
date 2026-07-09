@@ -1283,10 +1283,12 @@
             <div class="quick-filter">
                 <button class="qf-btn" id="qfTodayBuy" data-type="buy">📅 今日买入</button>
                 <button class="qf-btn" id="qfTodaySell" data-type="sell">📅 今日卖出</button>
+                <!-- 新增“次日卖出”按钮 -->
+                <button class="qf-btn" id="qfNextSell">📅 次日卖出</button>
                 <button class="qf-btn" id="qfClear" style="background:transparent; border-color:transparent; color:#8a9bb5;">清除筛选</button>
             </div>
 
-            <!-- ===== 新增排序控制 ===== -->
+            <!-- ===== 排序控制 ===== -->
             <div class="sort-control">
                 <label>排序：</label>
                 <button class="qf-btn active" id="sortDefaultBtn">默认顺序</button>
@@ -1374,7 +1376,7 @@
                 <h4>📊 查看与管理历史记录</h4>
                 <ul>
                     <li>点击「📋 查看记录」打开历史列表，支持：<br>
-                        • <span class="highlight">快速筛选</span>：今日买入 / 今日卖出<br>
+                        • <span class="highlight">快速筛选</span>：今日买入 / 今日卖出 / 次日卖出<br>
                         • <span class="highlight">高级筛选</span>：按年/年月/具体日期筛选买入或卖出日期，需点击「应用」生效<br>
                         • <span class="highlight">排序切换</span>：默认按记录顺序，可切换为按卖出日期倒序<br>
                         • <span class="highlight">列显示控制</span>：点击列标签可隐藏/显示，状态自动保存<br>
@@ -1966,7 +1968,7 @@
         }
 
         // ============================================================
-        // 快速筛选功能（自动应用）
+        // 快速筛选功能（包含次日卖出）
         // ============================================================
         function applyQuickFilter(type) {
             const today = new Date().toISOString().slice(0, 10);
@@ -1979,6 +1981,18 @@
                 currentFilter.field = 'sellDate';
                 currentFilter.type = 'date';
                 currentFilter.date = today;
+                currentFilter.tradeType = 'all';
+            } else if (type === 'nextsell') {
+                // 计算下一个交易日（从明天开始找）
+                let d = new Date();
+                d.setDate(d.getDate() + 1);
+                while (!isTradingDay(d)) {
+                    d.setDate(d.getDate() + 1);
+                }
+                const nextSellDate = d.toISOString().slice(0, 10);
+                currentFilter.field = 'sellDate';
+                currentFilter.type = 'date';
+                currentFilter.date = nextSellDate;
                 currentFilter.tradeType = 'all';
             } else {
                 currentFilter.field = 'buyDate';
@@ -2748,6 +2762,10 @@
         });
         document.getElementById('qfTodaySell').addEventListener('click', function() {
             applyQuickFilter('sell');
+        });
+        // 新增“次日卖出”事件
+        document.getElementById('qfNextSell').addEventListener('click', function() {
+            applyQuickFilter('nextsell');
         });
         document.getElementById('qfClear').addEventListener('click', function() {
             applyQuickFilter('clear');
