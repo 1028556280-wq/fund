@@ -2314,63 +2314,92 @@
         // ============================================================
         // 净值获取核心
         // ============================================================
-        function fetchNetValueOnDate(fundCode, targetDate) {
-            return new Promise((resolve, reject) => {
-                const url =
-                    `https://fundf10.eastmoney.com/F10DataApi.aspx?type=lsjz&code=${fundCode}&page=1&per=1&sdate=${targetDate}&edate=${targetDate}`;
-                const script = document.createElement('script');
-                script.src = url;
-                let resolved = false;
-                const cleanup = () => { if (document.body.contains(script)) document.body.removeChild(script); };
-                const timer = setTimeout(() => {
-                    if (!resolved) { resolved = true;
-                        cleanup();
-                        reject(new Error('请求超时')); }
-                }, 10000);
-                script.onload = function() {
-                    if (resolved) return;
-                    resolved = true;
-                    clearTimeout(timer);
-                    try {
-                        const apidata = window.apidata;
-                        if (!apidata || !apidata.content) { cleanup();
-                            reject(new Error('数据为空')); return; }
-                        const content = apidata.content;
-                        if (content.includes('暂无数据')) { cleanup();
-                            reject(new Error('无数据')); return; }
-                        const rows = content.split('<tr>');
-                        for (const row of rows) {
-                            if (row.includes(`<td>${targetDate}</td>`)) {
-                                const cells = row.match(/<td[^>]*>(.*?)<\/td>/g);
-                                if (cells && cells.length >= 3) {
-                                    const unitStr = cells[1].replace(/<[^>]+>/g, '').trim();
-                                    const accStr = cells[2].replace(/<[^>]+>/g, '').trim();
-                                    const unitNav = parseFloat(unitStr);
-                                    const accNav = parseFloat(accStr);
-                                    if (!isNaN(unitNav) && !isNaN(accNav)) {
-                                        cleanup();
-                                        resolve({ unitNav, accNav });
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        cleanup();
-                        reject(new Error('未找到净值'));
-                    } catch (e) { cleanup();
-                        reject(new Error('解析失败: ' + e.message)); }
-                };
-                script.onerror = function() {
-                    if (resolved) return;
-                    resolved = true;
-                    clearTimeout(timer);
-                    cleanup();
-                    reject(new Error('网络请求失败'));
-                };
-                document.head.appendChild(script);
-            });
-        }
+      function fetchNetValueOnDate(fundCode, targetDate) {
+    return new Promise((resolve, reject) => {
+        // 生成唯一标识，用于清理
+        const scriptId = 'fund_script_' + Date.now();
+        const script = document.createElement('script');
+        script.src = `https://fund.eastmoney.com/pingzhongdata/${fundCode}.js`;
+        script.id = scriptId;
 
+        // 超时保护（15秒）
+        const timer = setTimeout(() => {
+            if (document.head.contains(script)) document.head.removeChild(script);
+            delete window.Data_netWorthTrend;
+            delete window.Data_ACWorthTrend;
+            reject(new Error('请求超时，请检查网络'));
+        }, 15000);
+
+        script.onload = function() {
+            clearTimeout(timer);
+            try {
+                // 检查数据是否存在
+                if (typeof Data_netWorthTrend === 'undefined' || typeof Data_ACWorthTrend === 'undefined') {
+                    throw new Error('数据加载失败，请确认基金代码是否正确');
+                }
+
+                // 将目标日期转为时间戳（当天0点）
+                const targetDateObj = new Date(targetDate);
+                targetDateObj.setHours(0, 0, 0, 0);
+                const targetTimestamp = targetDateObj.getTime();
+
+                // 查找单位净值（Data_netWorthTrend 是对象数组 [{x, y, ...}]）
+                let unitNav = null;
+                for (const item of Data_netWorthTrend) {
+                    const itemDate = new Date(item.x);
+                    itemDate.setHours(0, 0, 0, 0);
+                    if (itemDate.getTime() === targetTimestamp) {
+                        unitNav = item.y;
+                        break;
+                    }
+                }
+
+                // 查找累计净值（Data_ACWorthTrend 是数组对 [[timestamp, value], ...]）
+                let accNav = null;
+                for (const pair of Data_ACWorthTrend) {
+                    const ts = pair[0];
+                    const itemDate = new Date(ts);
+                    itemDate.setHours(0, 0, 0, 0);
+                    if (itemDate.getTime() === targetTimestamp) {
+                        accNav = pair[1];
+                        break;
+                    }
+                }
+
+                // 清理全局变量（避免干扰后续请求）
+                delete window.Data_netWorthTrend;
+                delete window.Data_ACWorthTrend;
+
+                if (unitNav !== null && accNav !== null) {
+                    resolve({ unitNav, accNav });
+                } else if (unitNav !== null && accNav === null) {
+                    // 部分基金可能累计净值数据缺失，用单位净值代替（但会丢失分红计算）
+                    console.warn('未找到累计净值，使用单位净值代替');
+                    resolve({ unitNav, accNav: unitNav });
+                } else {
+                    reject(new Error(`未找到 ${targetDate} 的净值数据，请确认该日为交易日`));
+                }
+            } catch (e) {
+                delete window.Data_netWorthTrend;
+                delete window.Data_ACWorthTrend;
+                reject(new Error('解析数据失败: ' + e.message));
+            } finally {
+                // 移除脚本标签
+                if (document.head.contains(script)) document.head.removeChild(script);
+            }
+        };
+
+        script.onerror = function() {
+            clearTimeout(timer);
+            delete window.Data_netWorthTrend;
+            delete window.Data_ACWorthTrend;
+            if (document.head.contains(script)) document.head.removeChild(script);
+            reject(new Error('网络请求失败，请检查基金代码是否正确'));
+        };
+
+        document.head.appendChild(script);
+    });
+}
         // ============================================================
         // 存储买入和卖出时的单位净值与累计净值
         // ============================================================
