@@ -7,7 +7,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
     </script>
     <style>
-        /* ===== 基础样式（与上一版完全相同，未做任何改动） ===== */
+        /* ===== 基础样式 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -32,86 +32,49 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             position: relative;
         }
- .header {
-    text-align: center;
-    margin-bottom: 0px;          /* 减小下边距 */
-    padding-bottom: 0px;         /* 减小内边距 */
-    border-bottom: 1px solid #f0f4fe;
-    display: flex;
-    flex-direction: column;      /* 垂直排列两行 */
-    gap: 0px;                   /* 两行间距缩小 */
-    align-items: center;
-}
-.header-top {
-    display: flex;
-    justify-content: space-between;  /* 左右两端对齐 */
-    width: 100%;
-    font-size: 10px;                /* 字体稍小 */
-    color: #8a9bb5;
-    padding: 0 2px;
-}
-.header-top .brand {
-    font-weight: 700;
-    color: #f6b83d;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-.header-top .dev-credit {
-    font-weight: 300;
-    letter-spacing: 2px;
-    color: #aabbcc;
-}
-.title-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    width: 100%;
-}
-.header h1 {
-    font-size: 16px;
-    font-weight: 800;
-    color: #1a2634;
-    letter-spacing: 0.5px;
-    margin: 0;          /* 移除多余margin */
-}
-.tutorial-btn-inline {
-    /* 保持原有样式不变 */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #4A90D9;
-    color: #fff;
-    font-size: 18px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    line-height: 1;
-    padding: 0;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(74, 144, 217, 0.3);
-}
-/* 原有的 .brand 和 .dev-credit 单独样式可以删掉，因为现在在 .header-top 中定义了 */
-   
-        .header .title-wrapper {
+        .header {
+            text-align: center;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #f0f4fe;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            align-items: center;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 10px;
+            color: #8a9bb5;
+            padding: 0 4px;
+        }
+        .header-top .brand {
+            font-weight: 700;
+            color: #f6b83d;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .header-top .dev-credit {
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #aabbcc;
+        }
+        .title-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            width: 100%;
         }
         .header h1 {
             font-size: 16px;
             font-weight: 800;
             color: #1a2634;
             letter-spacing: 0.5px;
-            margin-bottom: 0;
-            display: inline-block;
+            margin: 0;
         }
-  
         .tutorial-btn-inline {
             display: inline-flex;
             align-items: center;
@@ -843,7 +806,6 @@
             transform: scale(0.97);
         }
 
-        /* ===== 编辑弹窗 ===== */
         .edit-form-group {
             margin-bottom: 8px;
             display: flex;
@@ -889,7 +851,6 @@
             font-size: 12px;
         }
 
-        /* ===== 教程内容 ===== */
         .tutorial-content {
             font-size: 13px;
             line-height: 1.6;
@@ -919,7 +880,6 @@
             color: #4A90D9;
         }
 
-        /* ===== 新增：数据来源选择 & 状态显示 ===== */
         .source-selector {
             display: flex;
             align-items: center;
@@ -956,7 +916,6 @@
             font-weight: 600;
         }
 
-        /* ===== 移动端适配 ===== */
         @media (max-width: 440px) {
             body {
                 padding: 8px;
@@ -1243,17 +1202,17 @@
 
         <!-- ===== 头部 ===== -->
         <div class="header">
-    <div class="header-top">
-        <span class="brand">⚡ 天天向上 · 专属</span>
-        <span class="dev-credit">开发者 —— 小小</span>
-    </div>
-    <div class="title-wrapper">
-        <h1>基金收益计算器</h1>
-        <button class="tutorial-btn-inline" id="tutorialTriggerBtn" title="使用教程">
-            <span>❓</span>
-        </button>
-    </div>
-</div>
+            <div class="header-top">
+                <span class="brand">⚡ 天天向上 · 专属</span>
+                <span class="dev-credit">开发者 —— 小小</span>
+            </div>
+            <div class="title-wrapper">
+                <h1>基金收益计算器</h1>
+                <button class="tutorial-btn-inline" id="tutorialTriggerBtn" title="使用教程">
+                    <span>❓</span>
+                </button>
+            </div>
+        </div>
 
         <!-- ===== 独立提醒栏 ===== -->
         <div id="settlementAlert" class="alert-bar no-alert">📋 今日无应结算</div>
@@ -1324,7 +1283,7 @@
 
         <div id="statusMsg" class="status-msg">💡 修改日期或基金代码自动获取净值</div>
 
-        <!-- ===== 新增：数据源选择与状态显示 ===== -->
+        <!-- ===== 数据源选择与状态显示 ===== -->
         <div class="source-selector" id="sourceSelector">
             <span class="label">🔌 首选数据源：</span>
             <label class="radio-label">
@@ -1778,7 +1737,7 @@
         };
 
         // ============================================================
-        // 核心净值获取函数：双数据源智能降级 + 用户偏好
+        // 核心净值获取函数：双数据源智能降级 + 智能选择
         // ============================================================
         let currentDataSource = '';
 
@@ -1794,11 +1753,15 @@
                     return;
                 }
 
+                // ---- 判断是否为今天 ----
+                const todayStr = new Date().toISOString().slice(0, 10);
+                const isToday = (targetDate === todayStr);
+
                 // ---- 数据源1：天天基金（pingzhongdata） ----
                 function fetchFromPingZhong() {
                     return new Promise((resolve, reject) => {
                         const script = document.createElement('script');
-                        script.src = `https://fund.eastmoney.com/pingzhongdata/${fundCode}.js`;
+                        script.src = `https://fund.eastmoney.com/pingzhongdata/${fundCode}.js?v=${Date.now()}`;
                         const timer = setTimeout(() => {
                             cleanup();
                             reject(new Error('天天基金请求超时'));
@@ -1814,28 +1777,28 @@
                         script.onload = function() {
                             clearTimeout(timer);
                             try {
-                                if (typeof Data_netWorthTrend === 'undefined' || typeof Data_ACWorthTrend ===
-                                    'undefined') {
+                                if (typeof Data_netWorthTrend === 'undefined' || typeof Data_ACWorthTrend === 'undefined') {
                                     throw new Error('数据为空，请确认基金代码是否正确');
                                 }
-                                const targetDateObj = new Date(targetDate);
-                                targetDateObj.setHours(0, 0, 0, 0);
-                                const targetTimestamp = targetDateObj.getTime();
-
+                                const targetDateStr = targetDate;
                                 let unitNav = null,
                                     accNav = null;
+                                // 查找单位净值（手动拼接日期，消除时区问题）
                                 for (const item of Data_netWorthTrend) {
-                                    const itemDate = new Date(item.x);
-                                    itemDate.setHours(0, 0, 0, 0);
-                                    if (itemDate.getTime() === targetTimestamp) {
+                                    const d = new Date(item.x);
+                                    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                                        String(d.getDate()).padStart(2, '0');
+                                    if (dateStr === targetDateStr) {
                                         unitNav = item.y;
                                         break;
                                     }
                                 }
+                                // 查找累计净值
                                 for (const pair of Data_ACWorthTrend) {
-                                    const itemDate = new Date(pair[0]);
-                                    itemDate.setHours(0, 0, 0, 0);
-                                    if (itemDate.getTime() === targetTimestamp) {
+                                    const d = new Date(pair[0]);
+                                    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                                        String(d.getDate()).padStart(2, '0');
+                                    if (dateStr === targetDateStr) {
                                         accNav = pair[1];
                                         break;
                                     }
@@ -1861,90 +1824,130 @@
                     });
                 }
 
-                // ---- 数据源2：腾讯财经（fund-api） ----
-                function fetchFromTencent() {
+                // ---- 数据源2a：腾讯实时接口（仅当天使用，已修正索引） ----
+                function fetchFromTencentRealtime() {
+                    return new Promise((resolve, reject) => {
+                        const url = `https://qt.gtimg.cn/q=jj${fundCode}`;
+                        const callbackName = 'v_jj' + fundCode;
+                        if (window[callbackName]) delete window[callbackName];
+                        const script = document.createElement('script');
+                        script.src = url;
+                        const timer = setTimeout(() => {
+                            cleanup();
+                            reject(new Error('腾讯实时接口请求超时'));
+                        }, 8000);
+
+                        function cleanup() {
+                            clearTimeout(timer);
+                            if (document.head.contains(script)) document.head.removeChild(script);
+                            if (window[callbackName]) delete window[callbackName];
+                        }
+                        script.onload = function() {
+                            clearTimeout(timer);
+                            try {
+                                const raw = window[callbackName];
+                                if (!raw) { cleanup();
+                                    reject(new Error('返回空数据')); return; }
+                                const parts = raw.split('~');
+                                // 根据实际数组索引（从0开始）：5=单位净值, 6=累计净值, 8=日期
+                                const date = parts[8] || '';
+                                const unitNav = parseFloat(parts[5]) || 0;
+                                const accNav = parseFloat(parts[6]) || unitNav;
+                                cleanup();
+                                if (unitNav > 0 && date) {
+                                    console.log(`腾讯实时接口返回日期：${date}，净值：${unitNav}`);
+                                    resolve({ unitNav, accNav, _source: `腾讯财经 (实时) 日期: ${date}` });
+                                } else {
+                                    reject(new Error('实时接口数据无效（净值或日期为空）'));
+                                }
+                            } catch (e) {
+                                cleanup();
+                                reject(e);
+                            }
+                        };
+                        script.onerror = function() {
+                            cleanup();
+                            reject(new Error('腾讯实时网络请求失败'));
+                        };
+                        document.head.appendChild(script);
+                    });
+                }
+
+                // ---- 数据源2b：腾讯历史净值（fund-api，用于非当天） ----
+                function fetchFromTencentHistory() {
                     return new Promise((resolve, reject) => {
                         if (typeof FundApi === 'undefined') {
                             const libScript = document.createElement('script');
                             libScript.src = 'https://cdn.jsdelivr.net/npm/fund-api/dist/browser/fund-api.iife.min.js';
-                            libScript.onload = function() {
-                                doTencentFetch();
-                            };
-                            libScript.onerror = function() {
-                                reject(new Error('腾讯数据源加载失败'));
-                            };
+                            libScript.onload = function() { doHistoryFetch(); };
+                            libScript.onerror = function() { reject(new Error('腾讯历史库加载失败')); };
                             document.head.appendChild(libScript);
                         } else {
-                            doTencentFetch();
+                            doHistoryFetch();
                         }
 
-                        function doTencentFetch() {
-                            const timer = setTimeout(() => {
-                                reject(new Error('腾讯接口请求超时'));
-                            }, 15000);
+                        function doHistoryFetch() {
+                            const timer = setTimeout(() => reject(new Error('腾讯历史接口超时')), 15000);
                             FundApi.funds.tencent.getNavHistory(fundCode)
-                                .then(function(data) {
+                                .then(data => {
                                     clearTimeout(timer);
-                                    if (!data || data.length === 0) {
-                                        reject(new Error('腾讯无此基金数据'));
-                                        return;
-                                    }
-                                    let found = null;
-                                    for (const item of data) {
-                                        if (item.date === targetDate) {
-                                            found = item;
-                                            break;
-                                        }
-                                    }
+                                    if (!data || data.length === 0) reject(new Error('腾讯历史无数据'));
+                                    let found = data.find(item => item.date === targetDate);
                                     if (found) {
                                         resolve({
                                             unitNav: parseFloat(found.nav),
-                                            accNav: parseFloat(found.accNav),
-                                            _source: '腾讯财经'
+                                            accNav: parseFloat(found.accNav) || parseFloat(found.nav),
+                                            _source: '腾讯财经 (历史)'
                                         });
                                     } else {
-                                        reject(new Error(`腾讯未找到 ${targetDate} 的净值数据`));
+                                        reject(new Error(`腾讯历史未找到 ${targetDate}`));
                                     }
                                 })
-                                .catch(function(err) {
+                                .catch(err => {
                                     clearTimeout(timer);
-                                    reject(new Error('腾讯接口异常: ' + err.message));
+                                    reject(err);
                                 });
                         }
                     });
                 }
 
-                // ---- 根据用户偏好确定尝试顺序 ----
-                const preferred = getPreferredSource();
-                const sourceList = preferred === 'pingzhong' ?
-                    [fetchFromPingZhong, fetchFromTencent] :
-                    [fetchFromTencent, fetchFromPingZhong];
+                // ---- 根据日期决定数据源优先级 ----
+                let sources = [];
+                if (isToday) {
+                    // 当天：优先实时接口，然后天天基金，最后腾讯历史（兜底）
+                    sources = [fetchFromTencentRealtime, fetchFromPingZhong, fetchFromTencentHistory];
+                } else {
+                    // 非当天：天天基金 → 腾讯历史
+                    sources = [fetchFromPingZhong, fetchFromTencentHistory];
+                }
 
+                // 执行尝试链
                 function trySources(index) {
-                    if (index >= sourceList.length) {
+                    if (index >= sources.length) {
                         reject(new Error('所有数据源均无法获取净值'));
                         return;
                     }
-                    const sourceFn = sourceList[index];
-                    const sourceName = sourceFn.name === 'fetchFromPingZhong' ? '天天基金' : '腾讯财经';
-                    console.log(`🔍 尝试 ${sourceName} ...`);
-                    setStatus(`⏳ 尝试 ${sourceName} ...`, '');
-                    sourceFn()
+                    const fn = sources[index];
+                    const name = fn.name || 'unknown';
+                    console.log(`🔍 尝试 ${name} ...`);
+                    setStatus(`⏳ 尝试 ${name} ...`, '');
+                    fn()
                         .then(result => {
-                            console.log(`✅ [${sourceName}] 获取成功`);
-                            currentDataSource = sourceName;
-                            updateDataSourceDisplay(sourceName);
-                            setStatus(`✅ ${targetDate} 单位净值 ${result.unitNav}，累计净值 ${result.accNav} (来源: ${sourceName})`,
+                            console.log(`✅ [${name}] 获取成功`);
+                            currentDataSource = result._source || name;
+                            updateDataSourceDisplay(currentDataSource);
+                            setStatus(`✅ ${targetDate} 单位净值 ${result.unitNav}，累计净值 ${result.accNav} (来源: ${currentDataSource})`,
                                 'success');
                             NavCache.set(fundCode, targetDate, result);
                             resolve({ unitNav: result.unitNav, accNav: result.accNav });
                         })
                         .catch(err => {
-                            console.warn(`⚠️ [${sourceName}] 失败: ${err.message}`);
+                            console.warn(`⚠️ [${name}] 失败: ${err.message}`);
                             trySources(index + 1);
                         });
                 }
 
+                // 开始尝试
                 trySources(0);
             });
         }
