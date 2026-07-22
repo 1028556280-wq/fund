@@ -7,7 +7,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
     </script>
     <style>
-        /* ===== 基础样式 ===== */
+        /* ===== 基础样式（与上一版完全相同，未做任何改动） ===== */
         * {
             margin: 0;
             padding: 0;
@@ -806,6 +806,7 @@
             transform: scale(0.97);
         }
 
+        /* ===== 编辑弹窗 ===== */
         .edit-form-group {
             margin-bottom: 8px;
             display: flex;
@@ -851,6 +852,7 @@
             font-size: 12px;
         }
 
+        /* ===== 教程内容 ===== */
         .tutorial-content {
             font-size: 13px;
             line-height: 1.6;
@@ -880,6 +882,7 @@
             color: #4A90D9;
         }
 
+        /* ===== 新增：数据来源选择 & 状态显示 ===== */
         .source-selector {
             display: flex;
             align-items: center;
@@ -916,6 +919,7 @@
             font-weight: 600;
         }
 
+        /* ===== 移动端适配 ===== */
         @media (max-width: 440px) {
             body {
                 padding: 8px;
@@ -1737,13 +1741,15 @@
         };
 
         // ============================================================
-        // 核心净值获取函数：双数据源智能降级 + 智能选择
+        // 核心净值获取函数（统一简化版，带实时数据存储）
         // ============================================================
         let currentDataSource = '';
 
         function fetchNetValueOnDate(fundCode, targetDate) {
             return new Promise((resolve, reject) => {
-                // 检查缓存
+                // 清空上一次的实时缓存
+                window._lastRealtime = null;
+
                 const cached = NavCache.get(fundCode, targetDate);
                 if (cached) {
                     console.log(`📦 缓存命中: ${fundCode} ${targetDate}`);
@@ -1753,19 +1759,16 @@
                     return;
                 }
 
-                // ---- 判断是否为今天 ----
-                const todayStr = new Date().toISOString().slice(0, 10);
-                const isToday = (targetDate === todayStr);
+                // ---- 定义三个数据源 ----
 
-                // ---- 数据源1：天天基金（pingzhongdata） ----
+                // 源1：天天基金
                 function fetchFromPingZhong() {
                     return new Promise((resolve, reject) => {
                         const script = document.createElement('script');
-                        script.src = `https://fund.eastmoney.com/pingzhongdata/${fundCode}.js?v=${Date.now()}`;
-                        const timer = setTimeout(() => {
-                            cleanup();
-                            reject(new Error('天天基金请求超时'));
-                        }, 10000);
+                        script.src =
+                            `https://fund.eastmoney.com/pingzhongdata/${fundCode}.js?v=${Date.now()}`;
+                        const timer = setTimeout(() => { cleanup();
+                            reject(new Error('天天基金请求超时')); }, 10000);
 
                         function cleanup() {
                             clearTimeout(timer);
@@ -1773,31 +1776,29 @@
                             delete window.Data_netWorthTrend;
                             delete window.Data_ACWorthTrend;
                         }
-
                         script.onload = function() {
                             clearTimeout(timer);
                             try {
-                                if (typeof Data_netWorthTrend === 'undefined' || typeof Data_ACWorthTrend === 'undefined') {
-                                    throw new Error('数据为空，请确认基金代码是否正确');
+                                if (typeof Data_netWorthTrend === 'undefined' || typeof Data_ACWorthTrend ===
+                                    'undefined') {
+                                    throw new Error('数据为空');
                                 }
                                 const targetDateStr = targetDate;
                                 let unitNav = null,
                                     accNav = null;
-                                // 查找单位净值（手动拼接日期，消除时区问题）
                                 for (const item of Data_netWorthTrend) {
                                     const d = new Date(item.x);
-                                    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                                        String(d.getDate()).padStart(2, '0');
+                                    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,
+                                        '0') + '-' + String(d.getDate()).padStart(2, '0');
                                     if (dateStr === targetDateStr) {
                                         unitNav = item.y;
                                         break;
                                     }
                                 }
-                                // 查找累计净值
                                 for (const pair of Data_ACWorthTrend) {
                                     const d = new Date(pair[0]);
-                                    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                                        String(d.getDate()).padStart(2, '0');
+                                    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,
+                                        '0') + '-' + String(d.getDate()).padStart(2, '0');
                                     if (dateStr === targetDateStr) {
                                         accNav = pair[1];
                                         break;
@@ -1809,71 +1810,20 @@
                                 } else if (unitNav !== null) {
                                     resolve({ unitNav, accNav: unitNav, _source: '天天基金 (累计净值缺失)' });
                                 } else {
-                                    reject(new Error(`天天基金未找到 ${targetDate} 的净值数据`));
+                                    reject(new Error(`天天基金未找到 ${targetDate} 的净值`));
                                 }
                             } catch (e) {
                                 cleanup();
                                 reject(e);
                             }
                         };
-                        script.onerror = function() {
-                            cleanup();
-                            reject(new Error('天天基金网络请求失败'));
-                        };
+                        script.onerror = function() { cleanup();
+                            reject(new Error('天天基金网络请求失败')); };
                         document.head.appendChild(script);
                     });
                 }
 
-                // ---- 数据源2a：腾讯实时接口（仅当天使用，已修正索引） ----
-                function fetchFromTencentRealtime() {
-                    return new Promise((resolve, reject) => {
-                        const url = `https://qt.gtimg.cn/q=jj${fundCode}`;
-                        const callbackName = 'v_jj' + fundCode;
-                        if (window[callbackName]) delete window[callbackName];
-                        const script = document.createElement('script');
-                        script.src = url;
-                        const timer = setTimeout(() => {
-                            cleanup();
-                            reject(new Error('腾讯实时接口请求超时'));
-                        }, 8000);
-
-                        function cleanup() {
-                            clearTimeout(timer);
-                            if (document.head.contains(script)) document.head.removeChild(script);
-                            if (window[callbackName]) delete window[callbackName];
-                        }
-                        script.onload = function() {
-                            clearTimeout(timer);
-                            try {
-                                const raw = window[callbackName];
-                                if (!raw) { cleanup();
-                                    reject(new Error('返回空数据')); return; }
-                                const parts = raw.split('~');
-                                // 根据实际数组索引（从0开始）：5=单位净值, 6=累计净值, 8=日期
-                                const date = parts[8] || '';
-                                const unitNav = parseFloat(parts[5]) || 0;
-                                const accNav = parseFloat(parts[6]) || unitNav;
-                                cleanup();
-                                if (unitNav > 0 && date) {
-                                    console.log(`腾讯实时接口返回日期：${date}，净值：${unitNav}`);
-                                    resolve({ unitNav, accNav, _source: `腾讯财经 (实时) 日期: ${date}` });
-                                } else {
-                                    reject(new Error('实时接口数据无效（净值或日期为空）'));
-                                }
-                            } catch (e) {
-                                cleanup();
-                                reject(e);
-                            }
-                        };
-                        script.onerror = function() {
-                            cleanup();
-                            reject(new Error('腾讯实时网络请求失败'));
-                        };
-                        document.head.appendChild(script);
-                    });
-                }
-
-                // ---- 数据源2b：腾讯历史净值（fund-api，用于非当天） ----
+                // 源2：腾讯历史净值
                 function fetchFromTencentHistory() {
                     return new Promise((resolve, reject) => {
                         if (typeof FundApi === 'undefined') {
@@ -1911,17 +1861,59 @@
                     });
                 }
 
-                // ---- 根据日期决定数据源优先级 ----
-                let sources = [];
-                if (isToday) {
-                    // 当天：优先实时接口，然后天天基金，最后腾讯历史（兜底）
-                    sources = [fetchFromTencentRealtime, fetchFromPingZhong, fetchFromTencentHistory];
-                } else {
-                    // 非当天：天天基金 → 腾讯历史
-                    sources = [fetchFromPingZhong, fetchFromTencentHistory];
+                // 源3：腾讯实时接口（用于获取参考数据，无论日期是否匹配都存储）
+                function fetchFromTencentRealtime() {
+                    return new Promise((resolve, reject) => {
+                        const url = `https://qt.gtimg.cn/q=jj${fundCode}`;
+                        const callbackName = 'v_jj' + fundCode;
+                        if (window[callbackName]) delete window[callbackName];
+                        const script = document.createElement('script');
+                        script.src = url;
+                        const timer = setTimeout(() => { cleanup();
+                            reject(new Error('腾讯实时接口请求超时')); }, 8000);
+
+                        function cleanup() {
+                            clearTimeout(timer);
+                            if (document.head.contains(script)) document.head.removeChild(script);
+                            if (window[callbackName]) delete window[callbackName];
+                        }
+                        script.onload = function() {
+                            clearTimeout(timer);
+                            try {
+                                const raw = window[callbackName];
+                                if (!raw) { cleanup();
+                                    reject(new Error('返回空数据')); return; }
+                                const parts = raw.split('~');
+                                const date = parts[8] || '';
+                                const unitNav = parseFloat(parts[5]) || 0;
+                                const accNav = parseFloat(parts[6]) || unitNav;
+                                cleanup();
+                                if (unitNav > 0 && date) {
+                                    // 无论日期是否匹配，都存储到全局
+                                    window._lastRealtime = { date, unitNav, accNav };
+                                    if (date === targetDate) {
+                                        console.log(`腾讯实时接口返回日期：${date}，净值：${unitNav}`);
+                                        resolve({ unitNav, accNav, _source: `腾讯财经 (实时) 日期: ${date}` });
+                                    } else {
+                                        reject(new Error(`实时日期 ${date} 不匹配目标 ${targetDate}`));
+                                    }
+                                } else {
+                                    reject(new Error('实时接口数据无效'));
+                                }
+                            } catch (e) {
+                                cleanup();
+                                reject(e);
+                            }
+                        };
+                        script.onerror = function() { cleanup();
+                            reject(new Error('腾讯实时网络请求失败')); };
+                        document.head.appendChild(script);
+                    });
                 }
 
-                // 执行尝试链
+                // ---- 统一尝试顺序 ----
+                const sources = [fetchFromPingZhong, fetchFromTencentHistory, fetchFromTencentRealtime];
+
                 function trySources(index) {
                     if (index >= sources.length) {
                         reject(new Error('所有数据源均无法获取净值'));
@@ -1947,7 +1939,6 @@
                         });
                 }
 
-                // 开始尝试
                 trySources(0);
             });
         }
@@ -2752,7 +2743,16 @@
                 buyAccNav = null;
                 calculate();
                 saveToLocalStorage();
-                setStatus(`⚠️ ${date} 无净值数据`, 'warning');
+                if (window._lastRealtime) {
+                    const real = window._lastRealtime;
+                    currentDataSource = `腾讯财经 (实时) ${real.date} 净值 ${real.unitNav}（仅供参考）`;
+                    updateDataSourceDisplay(currentDataSource);
+                    setStatus(`⚠️ 目标日期 ${date} 无净值，以上为最新实时数据`, 'warning');
+                } else {
+                    setStatus(`❌ ${date} 无净值数据`, 'error');
+                    currentDataSource = '❌ 无可用数据源';
+                    updateDataSourceDisplay(currentDataSource);
+                }
             }
         }
 
@@ -2787,7 +2787,16 @@
                 sellAccNav = null;
                 calculate();
                 saveToLocalStorage();
-                setStatus(`❌ ${sellDate} 无净值数据`, 'error');
+                if (window._lastRealtime) {
+                    const real = window._lastRealtime;
+                    currentDataSource = `腾讯财经 (实时) ${real.date} 净值 ${real.unitNav}（仅供参考）`;
+                    updateDataSourceDisplay(currentDataSource);
+                    setStatus(`⚠️ 目标日期 ${sellDate} 无净值，以上为最新实时数据`, 'warning');
+                } else {
+                    setStatus(`❌ ${sellDate} 无净值数据`, 'error');
+                    currentDataSource = '❌ 无可用数据源';
+                    updateDataSourceDisplay(currentDataSource);
+                }
             }
         }
 
@@ -3021,10 +3030,16 @@
                 buyAccNav = null;
                 calculate();
                 saveToLocalStorage();
-                setStatus('❌ ' + err.message, 'error');
-            } finally {
-                document.getElementById('fetchLatestBtn').disabled = false;
-                document.getElementById('fetchHistoryBtn').disabled = false;
+                if (window._lastRealtime) {
+                    const real = window._lastRealtime;
+                    currentDataSource = `腾讯财经 (实时) ${real.date} 净值 ${real.unitNav}（仅供参考）`;
+                    updateDataSourceDisplay(currentDataSource);
+                    setStatus(`⚠️ 目标日期 ${date} 无净值，以上为最新实时数据`, 'warning');
+                } else {
+                    setStatus(`❌ ${date} 无净值数据`, 'error');
+                    currentDataSource = '❌ 无可用数据源';
+                    updateDataSourceDisplay(currentDataSource);
+                }
             }
         }
 
