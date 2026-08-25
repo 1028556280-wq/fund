@@ -36,6 +36,8 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .input-group .fund-name{font-size:12px;color:var(--g);margin-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:40px;font-weight:600}
 .input-group .fund-name.error{color:var(--r)}
 .input-group .fund-name.loading{color:var(--gray)}
+.input-group select{flex:0 0 auto;background:#fff;border:1px solid #e3e9f2;border-radius:8px;padding:5px 8px;font-size:13px;font-weight:600;color:var(--txt);outline:none;cursor:pointer;margin-right:4px}
+.input-group .fee-custom{flex:0 0 64px;min-width:0;width:64px}
 .radio-group{gap:20px;padding:4px 12px}
 .radio-option{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#3d4e66;cursor:pointer;user-select:none}
 .radio-option input{display:none}
@@ -174,6 +176,7 @@ body{padding:8px}.container{padding:10px 8px 12px;border-radius:20px}.header h1{
   <div class="net-group"><label>交易对象</label><input type="text" id="target" inputmode="text" lang="zh-CN"></div>
   <div class="auto-row"><button class="btn-auto" id="autoBtn">📋 自动登记</button><button class="btn-reset" id="resetBtn">🔄 重置</button></div>
   <div class="input-group"><label>买入日期</label><input type="date" id="buyDate"></div>
+  <div class="input-group"><label>免手续费</label><select id="feeFreeDays"><option value="7" selected>7天（默认）</option><option value="30">30天</option><option value="custom">自定义</option></select><input type="number" id="feeFreeCustom" class="fee-custom" min="1" step="1" placeholder="天数" style="display:none"></div>
   <div class="input-group"><label>卖出日期</label><input type="date" id="sellDate"></div>
   <div class="btn-group"><button class="btn-fetch history" id="fetchHistory">📅 历史净值 → 买入</button><button class="btn-fetch latest" id="fetchLatest">📥 最新净值 → 卖出</button></div>
   <div id="statusMsg" class="status-msg">💡 修改日期或基金代码自动获取净值</div>
@@ -258,7 +261,7 @@ body{padding:8px}.container{padding:10px 8px 12px;border-radius:20px}.header h1{
     <div class="modal-header"><h3>📖 使用教程</h3><button class="modal-close" id="closeTutorial">✕</button></div>
     <div class="modal-body tutorial-content" style="padding:4px 0;">
       <h4>📌 快速上手</h4><ul><li><strong>1. 输入参数</strong>：填写金额、红包比例、基金代码，系统会自动补全基金名称。</li><li><strong>2. 选择日期</strong>：分别选择买入日期和卖出日期，系统自动获取净值。</li><li><strong>3. 自动计算</strong>：净收益、收益率、结算金额会实时显示，分红净值自动导入。</li><li><strong>4. 保存记录</strong>：点击「💾 保存记录」保存当前数据，同时复制到剪贴板方便分享。</li></ul>
-      <h4>⚡ 自动登记</h4><ul><li>点击「📋 自动登记」一键完成：<br>• 根据当前时间（考虑收盘和交易日）自动确定买入日期<br>• 买入日期 + 7 个交易日自动确定为卖出日期<br>• 自动获取净值和分红并保存记录，同时复制到剪贴板</li></ul>
+      <h4>⚡ 自动登记</h4><ul><li>点击「📋 自动登记」一键完成：<br>• 根据当前时间（考虑收盘和交易日）自动确定买入日期<br>• 根据「免手续费」下拉（默认7天，可改30天/自定义）自动确定卖出日期：买入日期 + N 天，遇节假日顺延至下一交易日<br>• 自动获取净值和分红并保存记录，同时复制到剪贴板</li></ul>
       <h4>📊 查看与管理历史记录</h4><ul><li>点击「📋 查看记录」打开历史列表，支持：<br>• <span class="highlight">快速筛选</span>：今日买入 / 今日卖出 / 次日卖出<br>• <span class="highlight">高级筛选</span>：按年/年月/具体日期筛选买入或卖出日期，需点击「应用」生效<br>• <span class="highlight">排序切换</span>：默认按记录顺序，可切换为按卖出日期倒序<br>• <span class="highlight">列显示控制</span>：点击列标签可隐藏/显示，状态自动保存<br>• 每条记录支持 <span class="highlight">更新</span>（重新获取净值）、<span class="highlight">编辑</span>（手动修改）、<span class="highlight">删除</span>，以及 <span class="highlight">续</span>（继承参数自动登记新单）</li><li>导出 Excel：一键导出所有记录为 xlsx 文件。</li><li><span class="highlight">统计</span>：可按基金、交易对象、时间段汇总收益。</li></ul>
       <h4>📋 复制与分享</h4><ul><li>保存记录或更新记录时，系统会自动将当前记录生成格式化文本并复制到剪贴板，可直接粘贴至微信、邮件等。</li><li>默认只复制有内容的字段，空字段自动跳过，保持简洁。</li></ul>
       <h4>🔔 今日应结算提醒</h4><ul><li>页面顶部独立区域显示「今日应结算 X 单」，提醒您今日有卖出日期的记录需要处理。</li></ul>
@@ -270,8 +273,11 @@ body{padding:8px}.container{padding:10px 8px 12px;border-radius:20px}.header h1{
 <script>
 // ========== 工具 & 常量 ==========
 const HOLIDAYS = ['2026-01-01','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-04-06','2026-05-01','2026-05-04','2026-05-05','2026-06-19','2026-06-22','2026-09-27','2026-09-28','2026-09-29','2026-09-30','2026-10-01','2026-10-02','2026-10-05','2026-10-06','2026-10-07'];
-const isTradingDay=d=>{const w=d.getDay();if(w===0||w===6)return false;return !HOLIDAYS.includes(d.toISOString().slice(0,10));};
+const isTradingDay=d=>{const w=d.getDay();if(w===0||w===6)return false;const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return !HOLIDAYS.includes(y+'-'+m+'-'+day);};
 const nextTradingDay=d=>{let dt=new Date(d);dt.setHours(0,0,0,0);while(!isTradingDay(dt))dt.setDate(dt.getDate()+1);return dt;};
+// ========== 卖出日期：按免手续费天数 + 节假日顺延 ==========
+function getFeeFreeDays(){const sel=feeFreeDays.value;if(sel==='custom'){const n=parseInt(feeFreeCustom.value,10);return n>0?n:7;}return parseInt(sel,10)||7;}
+function calcSellDate(){const b=buyDate.value;if(!b)return false;const bd=new Date(b+'T00:00:00');if(isNaN(bd.getTime()))return false;const n=getFeeFreeDays();const sd=nextTradingDay(new Date(bd.getTime()+n*86400000));const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');sellDate.value=fmt(sd);return true;}
 const SK={history:'fund_history_records',tradeType:'trade_type_preference',cols:'fund_visible_columns',tutorial:'fund_tutorial_shown',source:'fund_preferred_source',cache:'fund_nav_cache'};
 const COLS=[{key:'index',label:'#'},{key:'timestamp',label:'时间'},{key:'tradeType',label:'交易类型'},{key:'amount',label:'金额'},{key:'bonusRate',label:'红包'},{key:'fundCode',label:'基金代码'},{key:'fundName',label:'基金名称'},{key:'buyDate',label:'买入日期'},{key:'buyPrice',label:'买入净值'},{key:'sellDate',label:'卖出日期'},{key:'sellPrice',label:'卖出净值'},{key:'dividendPrice',label:'分红净值'},{key:'tradeTarget',label:'交易对象'},{key:'netProfit',label:'净收益'},{key:'returnRate',label:'收益率'},{key:'finalResult',label:'结算'}];
 
@@ -433,7 +439,7 @@ async function autoRegister(){
   const now=new Date(),hour=now.getHours(),min=now.getMinutes();
   const afterClose=hour>15||(hour===15&&min>0);
   let bd=isTradingDay(now)&&!afterClose?new Date(now):nextTradingDay(new Date(now.getTime()+86400000));
-  let sd=nextTradingDay(new Date(bd.getTime()+7*86400000));
+  let sd=nextTradingDay(new Date(bd.getTime()+getFeeFreeDays()*86400000));
   const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const bStr=fmt(bd),sStr=fmt(sd);
   buyDate.value=bStr;sellDate.value=sStr;
@@ -472,10 +478,13 @@ $('fetchHistory').addEventListener('click',async function(){const c=code.value.t
 
 ['amount','bonus','buyPrice','sellPrice','divPrice'].forEach(id=>{$(id).addEventListener('input',function(){calculate();saveLocal();});});
 target.addEventListener('input',saveLocal);
-buyDate.addEventListener('change',function(){calculate();saveLocal();tryAutoFetchBuy();});
+buyDate.addEventListener('change',function(){calculate();saveLocal();tryAutoFetchBuy();if(calcSellDate())debounceSell();});
 buyDate.addEventListener('input',function(){calculate();saveLocal();});
 sellDate.addEventListener('change',function(){calculate();saveLocal();debounceSell();});
 sellDate.addEventListener('input',function(){calculate();saveLocal();});
+// 免手续费天数 → 动态计算卖出日期（买入日 + N天，遇节假日顺延至下一交易日）
+feeFreeDays.addEventListener('change',function(){if(feeFreeDays.value==='custom'){feeFreeCustom.style.display='';feeFreeCustom.focus();}else{feeFreeCustom.style.display='none';}if(calcSellDate()){debounceSell();setStatus('✅ 已按免手续费 '+getFeeFreeDays()+' 天计算，卖出日期：'+sellDate.value,'success');}});
+feeFreeCustom.addEventListener('input',function(){if(feeFreeDays.value==='custom'&&calcSellDate())debounceSell();});
 
 $('viewBtn').addEventListener('click',openModal);
 $('closeHistory').addEventListener('click',closeModal);
