@@ -272,12 +272,29 @@ body{padding:8px}.container{padding:10px 8px 12px;border-radius:20px}.header h1{
 
 <script>
 // ========== 工具 & 常量 ==========
-const HOLIDAYS = ['2026-01-01','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-04-06','2026-05-01','2026-05-04','2026-05-05','2026-06-19','2026-06-22','2026-09-27','2026-09-28','2026-09-29','2026-09-30','2026-10-01','2026-10-02','2026-10-05','2026-10-06','2026-10-07'];
+const HOLIDAYS = ['2026-01-01','2026-01-02','2026-01-03','2026-02-15','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-21','2026-02-22','2026-02-23','2026-04-04','2026-04-05','2026-04-06','2026-05-01','2026-05-02','2026-05-03','2026-05-04','2026-05-05','2026-06-19','2026-06-20','2026-06-21','2026-09-25','2026-09-26','2026-09-27','2026-10-01','2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06','2026-10-07'];
 const isTradingDay=d=>{const w=d.getDay();if(w===0||w===6)return false;const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return !HOLIDAYS.includes(y+'-'+m+'-'+day);};
 const nextTradingDay=d=>{let dt=new Date(d);dt.setHours(0,0,0,0);while(!isTradingDay(dt))dt.setDate(dt.getDate()+1);return dt;};
+const prevTradingDay=d=>{let dt=new Date(d);dt.setHours(0,0,0,0);dt.setDate(dt.getDate()-1);while(!isTradingDay(dt))dt.setDate(dt.getDate()-1);return dt;};
 // ========== 卖出日期：按免手续费天数 + 节假日顺延 ==========
 function getFeeFreeDays(){const sel=feeFreeDays.value;if(sel==='custom'){const n=parseInt(feeFreeCustom.value,10);return n>0?n:7;}return parseInt(sel,10)||7;}
-function calcSellDate(){const b=buyDate.value;if(!b)return false;const bd=new Date(b+'T00:00:00');if(isNaN(bd.getTime()))return false;const n=getFeeFreeDays();const sd=nextTradingDay(new Date(bd.getTime()+n*86400000));const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');sellDate.value=fmt(sd);return true;}
+function calcSellDate(){
+  const b=buyDate.value;if(!b)return false;
+  const bd=new Date(b+'T00:00:00');if(isNaN(bd.getTime()))return false;
+  const n=getFeeFreeDays();
+  // 万能固定算法（4步）：持有期 = 赎回确认日 − 申购确认日（卖出提交后 T+1 确认）
+  // ① 申购确认日 = 买入日的下一个交易日
+  const confirmDay=nextTradingDay(new Date(bd.getTime()+1*86400000));
+  // ② 目标日 = 申购确认日 + N 自然日（N=7或30）
+  const targetDay=new Date(confirmDay.getTime()+n*86400000);
+  // ③ 赎回确认日 = 大于等于目标日的第一个交易日
+  const sellConfirmDay=nextTradingDay(targetDay);
+  // ④ 最早卖出提交日 = 赎回确认日的前一个交易日
+  const sellDay=prevTradingDay(sellConfirmDay);
+  const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  sellDate.value=fmt(sellDay);
+  return true;
+}
 const SK={history:'fund_history_records',tradeType:'trade_type_preference',cols:'fund_visible_columns',tutorial:'fund_tutorial_shown',source:'fund_preferred_source',cache:'fund_nav_cache'};
 const COLS=[{key:'index',label:'#'},{key:'timestamp',label:'时间'},{key:'tradeType',label:'交易类型'},{key:'amount',label:'金额'},{key:'bonusRate',label:'红包'},{key:'fundCode',label:'基金代码'},{key:'fundName',label:'基金名称'},{key:'buyDate',label:'买入日期'},{key:'buyPrice',label:'买入净值'},{key:'sellDate',label:'卖出日期'},{key:'sellPrice',label:'卖出净值'},{key:'dividendPrice',label:'分红净值'},{key:'tradeTarget',label:'交易对象'},{key:'netProfit',label:'净收益'},{key:'returnRate',label:'收益率'},{key:'finalResult',label:'结算'}];
 
@@ -439,7 +456,11 @@ async function autoRegister(){
   const now=new Date(),hour=now.getHours(),min=now.getMinutes();
   const afterClose=hour>15||(hour===15&&min>0);
   let bd=isTradingDay(now)&&!afterClose?new Date(now):nextTradingDay(new Date(now.getTime()+86400000));
-  let sd=nextTradingDay(new Date(bd.getTime()+getFeeFreeDays()*86400000));
+  // 卖出日期按“万能固定算法”(4步)：申购确认日=买入日下一交易日；目标日=确认日+N自然日；赎回确认日=>=目标日首交易日；卖出日=赎回确认日前一交易日
+  const confirmDay=nextTradingDay(new Date(bd.getTime()+86400000));
+  const targetDay=new Date(confirmDay.getTime()+getFeeFreeDays()*86400000);
+  const sellConfirmDay=nextTradingDay(targetDay);
+  let sd=prevTradingDay(sellConfirmDay);
   const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const bStr=fmt(bd),sStr=fmt(sd);
   buyDate.value=bStr;sellDate.value=sStr;
