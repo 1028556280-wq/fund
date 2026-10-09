@@ -299,7 +299,7 @@ const SK={history:'fund_history_records',tradeType:'trade_type_preference',cols:
 // 东财F10(动态快源)需 Referer，file:// 页面无法提供，必须经代理获取。
 // 本地测试：先 `node fund-proxy-server.js`，保持运行，下面填 http://localhost:3000
 // 永久部署：把 fund-proxy-worker.js 部署到 Cloudflare Workers，下面改成你的 *.workers.dev 地址
-const PROXY_BASE='';
+const PROXY_BASE='https://fund-em1.pages.dev';
 const COLS=[{key:'index',label:'#'},{key:'timestamp',label:'时间'},{key:'tradeType',label:'交易类型'},{key:'amount',label:'金额'},{key:'bonusRate',label:'红包'},{key:'fundCode',label:'基金代码'},{key:'fundName',label:'基金名称'},{key:'buyDate',label:'买入日期'},{key:'buyPrice',label:'买入净值'},{key:'sellDate',label:'卖出日期'},{key:'sellPrice',label:'卖出净值'},{key:'dividendPrice',label:'分红净值'},{key:'tradeTarget',label:'交易对象'},{key:'netProfit',label:'净收益'},{key:'returnRate',label:'收益率'},{key:'finalResult',label:'结算'}];
 
 // ========== 状态变量 ==========
