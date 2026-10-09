@@ -296,6 +296,10 @@ function calcSellDate(){
   return true;
 }
 const SK={history:'fund_history_records',tradeType:'trade_type_preference',cols:'fund_visible_columns',tutorial:'fund_tutorial_shown',source:'fund_preferred_source',cache:'fund_nav_cache'};
+// 东财F10(动态快源)需 Referer，file:// 页面无法提供，必须经代理获取。
+// 本地测试：先 `node fund-proxy-server.js`，保持运行，下面填 http://localhost:3000
+// 永久部署：把 fund-proxy-worker.js 部署到 Cloudflare Workers，下面改成你的 *.workers.dev 地址
+const PROXY_BASE='';
 const COLS=[{key:'index',label:'#'},{key:'timestamp',label:'时间'},{key:'tradeType',label:'交易类型'},{key:'amount',label:'金额'},{key:'bonusRate',label:'红包'},{key:'fundCode',label:'基金代码'},{key:'fundName',label:'基金名称'},{key:'buyDate',label:'买入日期'},{key:'buyPrice',label:'买入净值'},{key:'sellDate',label:'卖出日期'},{key:'sellPrice',label:'卖出净值'},{key:'dividendPrice',label:'分红净值'},{key:'tradeTarget',label:'交易对象'},{key:'netProfit',label:'净收益'},{key:'returnRate',label:'收益率'},{key:'finalResult',label:'结算'}];
 
 // ========== 状态变量 ==========
@@ -337,7 +341,46 @@ function fetchNetValueOnDate(fundCode,targetDate){return new Promise((resolve,re
 const fetchPingZhong=()=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=`https://fund.eastmoney.com/pingzhongdata/${fundCode}.js?v=${Date.now()}`;const t=setTimeout(()=>{cleanup();rej(new Error('天天基金超时'));},10000);function cleanup(){clearTimeout(t);if(document.head.contains(s))document.head.removeChild(s);delete window.Data_netWorthTrend;delete window.Data_ACWorthTrend;}s.onload=function(){clearTimeout(t);try{if(typeof Data_netWorthTrend==='undefined'||typeof Data_ACWorthTrend==='undefined')throw new Error('数据为空');let unit=null,acc=null;for(const item of Data_netWorthTrend){const d=new Date(item.x);if(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')===targetDate){unit=item.y;break;}}for(const pair of Data_ACWorthTrend){const d=new Date(pair[0]);if(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')===targetDate){acc=pair[1];break;}}cleanup();if(unit!==null&&acc!==null)res({unitNav:unit,accNav:acc,_source:'天天基金'});else if(unit!==null)res({unitNav:unit,accNav:unit,_source:'天天基金 (累计净值缺失)'});else rej(new Error(`天天基金未找到 ${targetDate}`));}catch(e){cleanup();rej(e);}};s.onerror=function(){cleanup();rej(new Error('天天基金网络请求失败'));};document.head.appendChild(s);});
 const fetchTencentHistory=()=>new Promise((res,rej)=>{if(typeof FundApi==='undefined'){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/fund-api/dist/browser/fund-api.iife.min.js';s.onload=doFetch;s.onerror=()=>rej(new Error('腾讯历史库加载失败'));document.head.appendChild(s);}else doFetch();function doFetch(){const t=setTimeout(()=>rej(new Error('腾讯历史接口超时')),15000);FundApi.funds.tencent.getNavHistory(fundCode).then(data=>{clearTimeout(t);if(!data||!data.length)rej(new Error('腾讯历史无数据'));const found=data.find(item=>item.date===targetDate);if(found)res({unitNav:parseFloat(found.nav),accNav:parseFloat(found.accNav)||parseFloat(found.nav),_source:'腾讯财经 (历史)'});else rej(new Error(`腾讯历史未找到 ${targetDate}`));}).catch(err=>{clearTimeout(t);rej(err);});}});
 const fetchTencentRealtime=()=>new Promise((res,rej)=>{const cb='v_jj'+fundCode;if(window[cb])delete window[cb];const s=document.createElement('script');s.src=`https://qt.gtimg.cn/q=jj${fundCode}`;const t=setTimeout(()=>{cleanup();rej(new Error('腾讯实时超时'));},8000);function cleanup(){clearTimeout(t);if(document.head.contains(s))document.head.removeChild(s);if(window[cb])delete window[cb];}s.onload=function(){clearTimeout(t);try{const raw=window[cb];if(!raw){cleanup();rej(new Error('返回空数据'));return;}const parts=raw.split('~'),date=parts[8]||'',unit=parseFloat(parts[5])||0,acc=parseFloat(parts[6])||unit;cleanup();if(unit>0&&date){window._lastRealtime={date,unitNav:unit,accNav:acc};if(date===targetDate)res({unitNav:unit,accNav:acc,_source:`腾讯财经 (实时) 日期: ${date}`});else rej(new Error(`实时日期 ${date} 不匹配目标 ${targetDate}`));}else rej(new Error('实时接口数据无效'));}catch(e){cleanup();rej(e);}};s.onerror=function(){cleanup();rej(new Error('腾讯实时网络请求失败'));};document.head.appendChild(s);});
-const sources=[fetchPingZhong,fetchTencentHistory,fetchTencentRealtime];function tryNext(i){if(i>=sources.length){reject(new Error('所有数据源均无法获取净值'));return;}const fn=sources[i],name=fn.name||'unknown';setStatus(`⏳ 尝试 ${name} ...`,'');fn().then(r=>{currentSource=r._source||name;updateSourceLabel();setStatus(`✅ ${targetDate} 单位净值 ${r.unitNav}，累计净值 ${r.accNav} (来源: ${currentSource})`,'success');NavCache.set(fundCode,targetDate,r);resolve({unitNav:r.unitNav,accNav:r.accNav});}).catch(err=>{console.warn(`⚠️ [${name}] 失败:`,err.message);tryNext(i+1);});}tryNext(0);});}
+const fetchEastmoneyF10=()=>new Promise((res,rej)=>{
+  const base=PROXY_BASE||'/api/lsjz';   // 云端部署时把 PROXY_BASE 设为 '' 即走同域函数(Cloudflare Pages/Vercel)
+  const cb='emf10_'+Math.random().toString(36).slice(2);
+  const s=document.createElement('script');
+  s.src=`${base}?code=${fundCode}&date=${targetDate}&callback=${cb}`;
+  const t=setTimeout(()=>{cleanup();rej(new Error('东财F10超时'));},10000);
+  let done=false;
+  function cleanup(){clearTimeout(t);if(document.head.contains(s))document.head.removeChild(s);if(window[cb])delete window[cb];}
+  window[cb]=function(data){
+    if(done)return;done=true;clearTimeout(t);
+    try{
+      if(!data||!data.Data||!data.Data.LSJZList||!data.Data.LSJZList.length)throw new Error('东财F10无数据');
+      const item=data.Data.LSJZList[0];const fsrq=item.FSRQ||'';const unit=parseFloat(item.DWJZ),acc=parseFloat(item.LJJZ);
+      if(fsrq===targetDate&&unit>0)res({unitNav:unit,accNav:acc,_source:'东财F10(动态) 日期: '+fsrq});
+      else rej(new Error(`东财F10日期 ${fsrq} 不匹配目标 ${targetDate}`));
+    }catch(e){rej(e);}
+    finally{cleanup();}
+  };
+  s.onload=function(){if(!done){done=true;cleanup();rej(new Error('东财F10未返回有效数据'));}};
+  s.onerror=function(){if(!done){done=true;cleanup();rej(new Error('东财F10网络请求失败'));}};
+  document.head.appendChild(s);
+});
+const sources=[fetchEastmoneyF10,fetchTencentRealtime,fetchTencentHistory,fetchPingZhong];
+  // 并行竞速：同时发起所有源，第一个成功返回目标日期净值者胜出（即“优先使用更快出净值的那个”）
+  let _done=false,_settled=0;
+  const _finishFail=()=>{_settled++;if(!_done&&_settled>=sources.length)reject(new Error('所有数据源均无法获取净值'));};
+  sources.forEach(fn=>{
+    fn().then(r=>{
+      if(_done)return;
+      _done=true;
+      currentSource=r._source||fn.name||'未知';updateSourceLabel();
+      setStatus(`✅ ${targetDate} 单位净值 ${r.unitNav}，累计净值 ${r.accNav} (来源: ${currentSource})`,'success');
+      NavCache.set(fundCode,targetDate,r);
+      resolve({unitNav:r.unitNav,accNav:r.accNav});
+    }).catch(err=>{
+      console.warn(`⚠️ [${fn.name||'unknown'}] 失败:`,err.message);
+      _finishFail();
+    });
+  });
+});}
 function updateSourceLabel(){const el=document.getElementById('sourceLabel');if(!el)return;const s=currentSource||'—';el.textContent=s;el.style.color=s.includes('天天基金')?'#4A90D9':s.includes('腾讯')?'#34a853':s.includes('缓存')?'#f6b83d':'#8a9bb5';}
 window.NavCache=NavCache;
 
