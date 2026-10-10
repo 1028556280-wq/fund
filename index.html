@@ -295,6 +295,31 @@ function calcSellDate(){
   sellDate.value=fmt(sellDay);
   return true;
 }
+const fmtDate=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+// 纯函数：给定买入日字符串，返回按免手续费规则算出的卖出日字符串（不读写 DOM）
+function computeSellDate(buyStr){
+  if(!buyStr)return null;
+  const bd=new Date(buyStr+'T00:00:00');if(isNaN(bd.getTime()))return null;
+  const n=getFeeFreeDays();
+  const confirmDay=nextTradingDay(new Date(bd.getTime()+1*86400000));
+  const targetDay=new Date(confirmDay.getTime()+n*86400000);
+  const sellConfirmDay=nextTradingDay(targetDay);
+  const sellDay=prevTradingDay(sellConfirmDay);
+  return fmtDate(sellDay);
+}
+// 反推：给定卖出日，找出所有买入日 B 满足 computeSellDate(B)===sellStr，返回最早的 B（字符串）；找不到返回 null
+function earliestBuyForSell(sellStr){
+  if(!sellStr)return null;
+  const sd=new Date(sellStr+'T00:00:00');if(isNaN(sd.getTime()))return null;
+  const n=getFeeFreeDays();
+  const win=n+45;let earliest=null;
+  for(let i=0;i<=win;i++){
+    const bStr=fmtDate(new Date(sd.getTime()-i*86400000));
+    if(computeSellDate(bStr)===sellStr)earliest=bStr;
+    else if(earliest)break;
+  }
+  return earliest;
+}
 const SK={history:'fund_history_records',tradeType:'trade_type_preference',cols:'fund_visible_columns',tutorial:'fund_tutorial_shown',source:'fund_preferred_source',cache:'fund_nav_cache'};
 // 东财F10(动态快源)需 Referer，file:// 页面无法提供，必须经代理获取。
 // 本地测试：先 `node fund-proxy-server.js`，保持运行，下面填 http://localhost:3000
@@ -524,6 +549,17 @@ function saveLocal(){const data={amount:amount.value,bonusRate:bonus.value,fundC
 function loadLocal(){try{const s=localStorage.getItem('fund_calculator_data');if(!s)return false;const d=JSON.parse(s);if(d.amount!==undefined)amount.value=d.amount;if(d.bonusRate!==undefined)bonus.value=d.bonusRate;if(d.fundCode!==undefined)code.value=d.fundCode;if(d.buyPrice!==undefined)buyPrice.value=d.buyPrice;if(d.sellPrice!==undefined)sellPrice.value=d.sellPrice;if(d.dividendPrice!==undefined)divPrice.value=d.dividendPrice;if(d.tradeTarget!==undefined)target.value=d.tradeTarget;if(d.sellDate!==undefined)sellDate.value=d.sellDate;return true;}catch(e){return false;}}
 function setDate7daysAgo(){const d=new Date();d.setDate(d.getDate()-7);buyDate.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function setSellToday(){sellDate.value=new Date().toISOString().slice(0,10);}
+function initDefaultDates(){
+  const today=new Date();today.setHours(0,0,0,0);
+  // 卖出日期：今天；若今天非交易日则顺延到下一个交易日
+  const sellStr=isTradingDay(today)?fmtDate(today):fmtDate(nextTradingDay(today));
+  sellDate.value=sellStr;
+  // 买入日期：反推「使卖出日=该日」的最早买入日（考虑节假日/免手续费天数）；
+  // 空档日（如 2026-10-12，没有任何买入日能映射到它）找不到则留空，由用户手动选择，手动修改权始终保留
+  const bStr=earliestBuyForSell(sellStr);
+  if(bStr){buyDate.value=bStr;}
+  else{buyDate.value='';setStatus('ℹ️ 当前卖出日（'+sellStr+'）为空档日，无对应买入日，请手动选择买入日期','');}
+}
 function resetInputs(){amount.value='';bonus.value='';code.value='';target.value='';buyPrice.value='';sellPrice.value='';divPrice.value='';nameDisplay.textContent='—';nameDisplay.className='fund-name';buyUnit=buyAcc=sellUnit=sellAcc=null;calculate();saveLocal();setStatus('🔄 已重置所有输入（日期保留）','');}
 
 // ========== 基金名称查询 ==========
@@ -598,8 +634,7 @@ function checkSyncFromURL(){const hash=window.location.hash;if(!hash||!hash.star
 window.addEventListener('DOMContentLoaded',function(){
   initTradeType();
   loadLocal();
-  setDate7daysAgo();
-  setSellToday();
+  initDefaultDates();
   loadHistory();
   calculate();
   initSourceUI();
