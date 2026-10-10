@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
 <title>基金收益计算器</title>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
 :root{--p:#4A90D9;--g:#f6b83d;--gr:#34a853;--r:#ea4335;--bg:#f5f8fe;--bdr:#eef2f9;--txt:#1a2634;--gray:#8a9bb5;--light:#f8fafe}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -150,6 +149,50 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .stats-table th{background:#f0f4fe;padding:4px 6px;text-align:left;font-weight:600;color:#3d4e66}
 .stats-table td{padding:4px 6px;border-bottom:1px solid var(--bdr)}
 .stats-table .total-row{background:#fff3cd;font-weight:700}
+@media(max-width:600px){
+  html,body{height:100%}
+  body{padding:4px;align-items:stretch}
+  .container{max-width:100%;border-radius:14px;padding:8px 8px 10px;box-shadow:0 8px 30px rgba(74,144,217,.1)}
+  .m-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:3px 8px;margin-bottom:3px}
+  .m-row .input-group,.m-row .net-group{margin-bottom:0}
+  .m-row .input-group label,.m-row .net-group label{width:60px;font-size:10px;letter-spacing:0;white-space:nowrap}
+  .m-row .input-group .fund-code{flex:1;min-width:0}
+  .m-row .input-group .fund-name{flex:0 1 auto;min-width:0;font-size:11px}
+  .m-row .radio-group{margin-bottom:0}
+  .m-row.row-amount-type{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:3px 10px}
+  .m-row.row-amount-type .radio-group{flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-start}
+  .m-row.row-amount-type .radio-option{white-space:nowrap}
+  .header{margin-bottom:2px;gap:1px}
+  .header-top{font-size:9px;padding:0}
+  .header h1{font-size:15px}
+  .tutorial-btn{width:26px;height:26px;font-size:14px}
+  .alert-bar{margin-bottom:3px;font-size:11px;min-height:18px;padding:2px 0}
+  .section-title{margin-bottom:2px}
+  #tradeGroup{padding:2px 8px;gap:14px;margin-bottom:2px}
+  .input-group,.net-group{margin-bottom:2px}
+  .input-group label,.net-group label{width:56px;font-size:11px}
+  .input-group.m-align>label,.net-group.m-align>label{width:60px;font-size:10px;white-space:nowrap}
+  .input-group input,.net-group input{font-size:13px;padding:5px 2px 5px 4px}
+  .auto-row{margin-bottom:2px;justify-content:flex-end}
+  .auto-row .btn-auto,.auto-row .btn-reset{font-size:10px;padding:4px 10px;min-width:46px}
+  .btn-group{margin:2px 0 3px;gap:4px}
+  .btn-fetch{font-size:11px;padding:6px 2px;border-radius:10px}
+  #statusMsg{font-size:10px;min-height:13px;margin-bottom:2px}
+  .source-selector{margin:2px 0 3px;padding:3px 8px;gap:6px}
+  .source-selector .label{font-size:11px}
+  .source-status{font-size:9px;margin-left:4px}
+  .result-area{margin-top:3px;padding:5px 6px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:12px}
+  .result-area .result-item,.result-area .final-row{flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0;background:#fff;border-radius:8px}
+  .result-area .result-item .label,.result-area .final-row .label{font-size:9px;text-align:center;line-height:1.15}
+  .result-area .result-item .value{font-size:12px;min-width:0;width:100%;line-height:18px;padding:0 2px}
+  .result-area .final-row .value{font-size:14px;min-width:0;width:100%;line-height:24px;padding:0 2px}
+  .save-section{margin-top:3px;gap:4px}
+  .btn-save,.btn-view{font-size:11px;padding:7px 2px}
+  .history-count{font-size:10px;padding:2px 8px}
+  .backup-row{margin-top:3px;gap:4px}
+  .backup-row button{font-size:10px;padding:6px 2px}
+  .hint{font-size:8px;margin-top:3px}
+}
 @media(max-width:440px){
 body{padding:8px}.container{padding:10px 8px 12px;border-radius:20px}.header h1{font-size:14px}.header .brand{font-size:8px}.header .dev-credit{font-size:9px}.tutorial-btn{width:28px;height:28px;font-size:15px}.alert-bar{font-size:12px;min-height:20px}.section-title{font-size:9px;margin-bottom:3px;padding-bottom:2px}.input-group,.radio-group{padding:0 6px 0 8px;border-radius:10px;margin-bottom:3px}.net-group{padding:0 6px 0 8px;border-radius:8px;margin-bottom:2px}.input-group label,.net-group label{font-size:11px;width:60px}.input-group input,.net-group input{font-size:13px;padding:5px 2px 5px 4px}.net-group input{padding:4px 2px 4px 4px}.input-group .fund-code{flex:0 0 66px;min-width:50px}.input-group .fund-name{font-size:11px}.radio-group{padding:3px 8px;gap:14px;margin-bottom:3px}.radio-option{font-size:11px}.radio-option .custom-radio{width:14px;height:14px}.radio-option input:checked+.custom-radio::after{width:6px;height:6px}.auto-row{margin-bottom:3px}.auto-row .btn-auto,.auto-row .btn-reset{font-size:11px;padding:4px 12px;min-width:50px;border-radius:10px}.btn-group{margin:4px 0 6px;gap:4px}.btn-fetch{font-size:11px;padding:5px 2px;border-radius:10px}.status-msg{font-size:10px;min-height:14px;margin-bottom:4px}.result-area{padding:4px 8px 4px;margin-top:6px;border-radius:12px}.result-item .value{font-size:13px;min-width:50px;line-height:20px;padding:0 8px}.final-row .value{font-size:18px;min-width:64px;line-height:30px;padding:0 10px}.final-row .label{font-size:12px}.save-section{margin-top:6px;gap:4px}.btn-save,.btn-view{font-size:11px;padding:6px 2px;flex:1 1 45%;min-width:60px}.history-count{font-size:10px;padding:2px 10px}.hint{font-size:9px;margin-top:4px}.modal{padding:16px 12px;max-height:75vh}.modal-body table{font-size:10px}.modal-body th,.modal-body td{padding:4px 2px}.col-toggle{font-size:9px;padding:1px 6px}.filter-section label{font-size:10px}.filter-section select,.filter-section input{font-size:10px;padding:2px 4px}.edit-group label{width:60px;font-size:11px}.edit-group input,.edit-group select{font-size:12px}.quick-filter .qf-btn,.sort-control .qf-btn{font-size:11px;padding:3px 10px}.source-selector{padding:2px 8px;gap:6px}.source-selector .label{font-size:11px}.source-selector .radio-label{font-size:11px}.source-status{font-size:10px}.stats-group label{font-size:11px}.stats-group select{font-size:11px}.stats-table{font-size:10px}
 }
@@ -166,18 +209,22 @@ body{padding:8px}.container{padding:10px 8px 12px;border-radius:20px}.header h1{
   </div>
   <div id="alertBar" class="alert-bar no-alert">📋 今日无应结算</div>
   <div class="section-title">📋 参数设置</div>
-  <div class="radio-group" id="tradeGroup">
-    <label class="radio-option"><input type="radio" name="tradeType" value="收包" checked><span class="custom-radio"></span>收包</label>
-    <label class="radio-option"><input type="radio" name="tradeType" value="卖包"><span class="custom-radio"></span>卖包</label>
+  <div class="m-row row-amount-type">
+    <div class="input-group"><label>金额(元)</label><input type="number" id="amount" step="any"></div>
+    <div class="radio-group" id="tradeGroup">
+      <label class="radio-option"><input type="radio" name="tradeType" value="收包" checked><span class="custom-radio"></span>收包</label>
+      <label class="radio-option"><input type="radio" name="tradeType" value="卖包"><span class="custom-radio"></span>卖包</label>
+    </div>
   </div>
-  <div class="input-group"><label>金额(元)</label><input type="number" id="amount" step="any"></div>
-  <div class="input-group"><label>红包(千分之)</label><input type="number" id="bonus" step="any"></div>
-  <div class="input-group"><label>基金代码</label><input type="text" id="code" class="fund-code"><span id="nameDisplay" class="fund-name">—</span></div>
-  <div class="net-group"><label>交易对象</label><input type="text" id="target" inputmode="text" lang="zh-CN"></div>
+  <div class="m-row row-bonus-target">
+    <div class="input-group"><label>红包(千分)</label><input type="number" id="bonus" step="any"></div>
+    <div class="net-group"><label>交易对象</label><input type="text" id="target" inputmode="text" lang="zh-CN"></div>
+  </div>
+  <div class="input-group m-align"><label>基金代码</label><input type="text" id="code" class="fund-code"><span id="nameDisplay" class="fund-name">—</span></div>
   <div class="auto-row"><button class="btn-auto" id="autoBtn">📋 自动登记</button><button class="btn-reset" id="resetBtn">🔄 重置</button></div>
-  <div class="input-group"><label>买入日期</label><input type="date" id="buyDate"></div>
-  <div class="input-group"><label>免手续费</label><select id="feeFreeDays"><option value="7" selected>7天（默认）</option><option value="30">30天</option><option value="custom">自定义</option></select><input type="number" id="feeFreeCustom" class="fee-custom" min="1" step="1" placeholder="天数" style="display:none"></div>
-  <div class="input-group"><label>卖出日期</label><input type="date" id="sellDate"></div>
+  <div class="input-group m-align"><label>买入日期</label><input type="date" id="buyDate"></div>
+  <div class="input-group m-align"><label>免手续费</label><select id="feeFreeDays"><option value="7" selected>7天（默认）</option><option value="30">30天</option><option value="custom">自定义</option></select><input type="number" id="feeFreeCustom" class="fee-custom" min="1" step="1" placeholder="天数" style="display:none"></div>
+  <div class="input-group m-align"><label>卖出日期</label><input type="date" id="sellDate"></div>
   <div class="btn-group"><button class="btn-fetch history" id="fetchHistory">📅 历史净值 → 买入</button><button class="btn-fetch latest" id="fetchLatest">📥 最新净值 → 卖出</button></div>
   <div id="statusMsg" class="status-msg">💡 修改日期或基金代码自动获取净值</div>
   <div class="source-selector">
@@ -186,16 +233,18 @@ body{padding:8px}.container{padding:10px 8px 12px;border-radius:20px}.header h1{
     <label class="radio-label"><input type="radio" name="source" value="tencent">腾讯财经</label>
     <span class="source-status">📡 当前：<span class="source-name" id="sourceLabel">—</span></span>
   </div>
-  <div class="net-group" id="buyGroup"><label>买入净值</label><input type="number" id="buyPrice" step="any"></div>
-  <div class="net-group" id="sellGroup"><label>卖出净值</label><input type="number" id="sellPrice" step="any"></div>
-  <div class="net-group"><label>分红净值</label><input type="number" id="divPrice" step="any" readonly style="color:#555;background:#f0f2f5;cursor:not-allowed"></div>
+  <div class="m-row">
+    <div class="net-group" id="buyGroup"><label>买入净值</label><input type="number" id="buyPrice" step="any"></div>
+    <div class="net-group" id="sellGroup"><label>卖出净值</label><input type="number" id="sellPrice" step="any"></div>
+  </div>
+  <div class="net-group m-align"><label>分红净值</label><input type="number" id="divPrice" step="any" readonly style="color:#555;background:#f0f2f5;cursor:not-allowed"></div>
   <div class="result-area">
     <div class="result-item"><span class="label">📌 净收益（不含红包）</span><span class="value" id="netProfit">—</span></div>
     <div class="result-item"><span class="label">📈 收益率</span><span class="value" id="returnRate">—</span></div>
     <div class="final-row"><span class="label">💰 结算（收包时，负数为转出）</span><span class="value" id="finalResult">—</span></div>
   </div>
   <div class="save-section"><button class="btn-save" id="saveBtn">💾 保存记录</button><button class="btn-view" id="viewBtn">📋 查看记录</button><span class="history-count" id="countLabel">📂 0 条</span></div>
-  <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+  <div class="backup-row" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
     <button class="btn-save" id="exportBackup" style="flex:1;background:linear-gradient(135deg,var(--g),#e6a020);box-shadow:0 4px 12px rgba(246,184,61,.25);">📤 导出备份</button>
     <button class="btn-view" id="importBackup" style="flex:1;background:linear-gradient(135deg,#8a9bb5,#6a7b95);box-shadow:0 4px 12px rgba(138,155,181,.25);">📥 导入备份</button>
     <button class="btn-fetch latest" id="syncLinkBtn" style="flex:1;background:linear-gradient(135deg,#9b59b6,#8e44ad);box-shadow:0 4px 12px rgba(155,89,182,.25);">🔗 生成同步链接</button>
@@ -412,8 +461,11 @@ window.NavCache=NavCache;
 // ========== 获取当前记录（含收益率） ==========
 function getCurrentRecord(){const now=new Date();const amt=amount.value||'';const np=netProfit.textContent;let rr='—';const amtNum=parseFloat(amt);const npNum=parseFloat(np);if(amtNum>0&&!isNaN(npNum))rr=(npNum/amtNum*100).toFixed(2);return{timestamp:now.toLocaleString('zh-CN',{hour12:false}),tradeType:document.querySelector('input[name="tradeType"]:checked')?.value||'收包',amount:amt,bonusRate:bonus.value||'',fundCode:code.value.trim()||'',fundName:(()=>{const t=nameDisplay.textContent;return(t==='—'||t==='⏳ 查询...'||t==='❌ 查询失败')?'':t;})(),buyDate:buyDate.value||'',sellDate:sellDate.value||'',buyPrice:buyPrice.value||'',sellPrice:sellPrice.value||'',dividendPrice:divPrice.value||'',tradeTarget:target.value||'',netProfit:np,returnRate:rr,finalResult:finalResult.textContent||'—'};}
 
+// ========== SheetJS 懒加载（仅在导出 Excel 时按需下载，避免阻塞首屏打开速度） ==========
+let _xlsxLoading=null;
+function ensureXlsx(){if(typeof XLSX!=='undefined')return Promise.resolve();if(_xlsxLoading)return _xlsxLoading;_xlsxLoading=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';s.onload=()=>resolve();s.onerror=()=>reject(new Error('组件加载失败'));document.head.appendChild(s);});return _xlsxLoading;}
 // ========== 导出 Excel ==========
-function exportExcel(records){if(!records||!records.length){alert('暂无记录可导出');return;}const data=records.map((r,i)=>({'序号':i+1,'时间':r.timestamp||'','交易类型':r.tradeType||'','金额(元)':r.amount||'','红包(千分之)':r.bonusRate||'','基金代码':r.fundCode||'','基金名称':r.fundName||'','买入日期':r.buyDate||'','买入净值':r.buyPrice||'','卖出日期':r.sellDate||'','卖出净值':r.sellPrice||'','分红净值':r.dividendPrice||'','交易对象':r.tradeTarget||'','净收益(不含红包)':r.netProfit||'','收益率(%)':r.returnRate||'','结算(收包时，负数为转出)':r.finalResult||''}));const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(data);ws['!cols']=[{wch:6},{wch:20},{wch:10},{wch:12},{wch:14},{wch:12},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:12},{wch:14},{wch:18},{wch:12},{wch:28}];XLSX.utils.book_append_sheet(wb,ws,'历史记录');const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'}),blob=new Blob([buf],{type:'application/octet-stream'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='基金计算历史记录.xlsx';document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(link.href);}
+async function exportExcel(records){try{await ensureXlsx();}catch(e){alert('Excel 导出组件加载失败，请检查网络后重试');return;}if(!records||!records.length){alert('暂无记录可导出');return;}const data=records.map((r,i)=>({'序号':i+1,'时间':r.timestamp||'','交易类型':r.tradeType||'','金额(元)':r.amount||'','红包(千分之)':r.bonusRate||'','基金代码':r.fundCode||'','基金名称':r.fundName||'','买入日期':r.buyDate||'','买入净值':r.buyPrice||'','卖出日期':r.sellDate||'','卖出净值':r.sellPrice||'','分红净值':r.dividendPrice||'','交易对象':r.tradeTarget||'','净收益(不含红包)':r.netProfit||'','收益率(%)':r.returnRate||'','结算(收包时，负数为转出)':r.finalResult||''}));const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(data);ws['!cols']=[{wch:6},{wch:20},{wch:10},{wch:12},{wch:14},{wch:12},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:12},{wch:14},{wch:18},{wch:12},{wch:28}];XLSX.utils.book_append_sheet(wb,ws,'历史记录');const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'}),blob=new Blob([buf],{type:'application/octet-stream'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='基金计算历史记录.xlsx';document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(link.href);}
 
 // ========== 保存记录 ==========
 function saveCurrentRecord(){const r=getCurrentRecord();historyRecords.push(r);saveHistory();setStatus(`✅ 已保存第 ${historyRecords.length} 条记录`,'success');showAlert();return r;}
@@ -589,7 +641,7 @@ feeFreeCustom.addEventListener('input',function(){if(feeFreeDays.value==='custom
 $('viewBtn').addEventListener('click',openModal);
 $('closeHistory').addEventListener('click',closeModal);
 $('historyModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-$('exportExcel').addEventListener('click',function(){exportExcel(historyRecords);setStatus(`✅ 已导出 ${historyRecords.length} 条记录`,'success');});
+$('exportExcel').addEventListener('click',async function(){setStatus('⏳ 正在准备 Excel 导出...');await exportExcel(historyRecords);setStatus(`✅ 已导出 ${historyRecords.length} 条记录`,'success');});
 $('clearAll').addEventListener('click',function(){if(confirm('确定清空所有历史记录？不可撤销！')){historyRecords=[];saveHistory();renderHistory();setStatus('🗑️ 已清空所有历史记录','warning');if(!historyRecords.length)$('modalBody').innerHTML='<div class="empty-msg">暂无记录</div>';showAlert();}});
 $('statsBtn').addEventListener('click',function(){openStats();renderStats();});
 $('closeStats').addEventListener('click',closeStats);
