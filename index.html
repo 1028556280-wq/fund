@@ -1123,5 +1123,30 @@ window.addEventListener('DOMContentLoaded',function(){
   setTimeout(checkSyncFromURL,800);
 });
 </script>
+<!-- ============================================================
+     访问统计埋点（把下面这段 <script> 注入到你网站的 </body> 之前）
+     作用：页面每次打开时，生成一个长期不变的访客ID（存 localStorage），
+           然后打一个 1x1 图片请求到你的 Worker /collect 接口。
+     对用户完全无感，不影响计算器功能。
+     ============================================================ -->
+<script>
+(function(){
+  try{
+    var vid = localStorage.getItem('fvid');
+    if(!vid){
+      vid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+            : 'v' + Date.now() + Math.random().toString(16).slice(2);
+      localStorage.setItem('fvid', vid);
+    }
+    var p  = encodeURIComponent(location.pathname + location.search);
+    var ua = encodeURIComponent(navigator.userAgent);
+    // ↓↓↓ 把地址换成你部署好的 Worker 子域 ↓↓↓
+    var ENDPOINT = 'https://fund-stats.1028556280.workers.dev/collect';
+    new Image().src = ENDPOINT + '?v=' + encodeURIComponent(vid)
+                 + '&ua=' + ua + '&p=' + p + '&_=' + Date.now();
+  }catch(e){}
+})();
+</script>
+
 </body>
 </html>
