@@ -1148,5 +1148,26 @@ window.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+<!-- ============================================================
+     51.la 国内访问统计（sdk.51.la 国内直连，解决 worker 国内漏记问题）
+     异步加载：即使 51.la 不可达也不会阻塞或白屏计算器；
+     原有 worker 埋点保留作为「私有日志」备用。
+     ============================================================ -->
+<script>
+(function(){
+  try{
+    var s = document.createElement('script');
+    s.charset = 'UTF-8';
+    s.id = 'LA_COLLECT';
+    s.src = '//sdk.51.la/js-sdk-pro.min.js';
+    s.onload = function(){
+      try{ if(window.LA && LA.init) LA.init({id:"3Rn7Q3voagxSs6lY",ck:"3Rn7Q3voagxSs6lY"}); }catch(e){}
+    };
+    s.onerror = function(){};
+    (document.head || document.documentElement).appendChild(s);
+  }catch(e){}
+})();
+</script>
+
 </body>
 </html>
