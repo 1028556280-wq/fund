@@ -107,9 +107,10 @@ body::after{
 .auto-row{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;margin-bottom:6px}
 .auto-row .auto-btns{display:flex;gap:8px}
 .notify-toggle{display:flex;align-items:center;gap:6px}
-.notify-toggle .nt-label{font-size:12px;font-weight:800;color:#c0560f;white-space:nowrap}
-.notify-toggle .nt-switch{width:auto;min-width:0;margin:0;padding:3px;gap:2px;background:var(--bg)}
-.notify-toggle .nt-switch .radio-option{padding:0 10px;font-size:12px}
+.notify-toggle .nt-label{font-size:12px;font-weight:800;color:#c0560f;white-space:nowrap;background:rgba(230,126,34,.12);padding:7px 12px;border-radius:var(--r2)}
+.notify-toggle .nt-switch{width:120px;flex:0 0 120px;margin:0;padding:4px;gap:4px;background:var(--bg);border-radius:var(--r2)}
+.notify-toggle .nt-switch .radio-option{padding:0}
+.notify-toggle .nt-switch .radio-option .seg-txt{padding:7px 0}
 .notify-toggle .nt-switch .radio-option:hover .seg-txt{color:#c0560f}
 .notify-toggle .nt-switch input[value="on"]:checked+.seg-txt{background:linear-gradient(135deg,#e67e22,#d35400);box-shadow:0 3px 10px rgba(230,126,34,.32)}
 .auto-row .btn-auto,.auto-row .btn-reset{padding:8px 18px;border:none;border-radius:var(--r2);font-size:12px;font-weight:800;cursor:pointer;transition:transform var(--dur) var(--ease),box-shadow var(--dur);min-width:64px;font-family:var(--font);letter-spacing:.3px}
@@ -257,8 +258,10 @@ body::after{
   .auto-row{margin-bottom:3px;justify-content:space-between;gap:4px}
   .auto-row .auto-btns{gap:4px}
   .notify-toggle{gap:4px}
-  .notify-toggle .nt-label{font-size:10px}
-  .notify-toggle .nt-switch .radio-option{padding:0 7px;font-size:10px}
+  .notify-toggle .nt-label{font-size:10px;padding:6px 9px}
+  .notify-toggle .nt-switch{width:104px;flex:0 0 104px;padding:4px;gap:4px}
+  .notify-toggle .nt-switch .radio-option{padding:0;font-size:11px}
+  .notify-toggle .nt-switch .radio-option .seg-txt{padding:6px 0}
   .auto-row .btn-auto,.auto-row .btn-reset{font-size:10px;padding:7px 10px;min-width:48px}
   .btn-group{margin:4px 0 5px;gap:5px}
   .btn-fetch{font-size:11px;padding:9px 2px;border-radius:var(--r1)}
