@@ -104,7 +104,14 @@ body::after{
 .radio-option .seg-txt{display:block;width:100%;text-align:center;padding:7px 0;border-radius:var(--r1);transition:background var(--dur),color var(--dur),box-shadow var(--dur)}
 .radio-option:hover .seg-txt{color:var(--p)}
 .radio-option input:checked+.seg-txt{background:linear-gradient(135deg,var(--p),#1f57c4);color:#fff;box-shadow:0 3px 10px rgba(47,111,237,.3)}
-.auto-row{display:flex;justify-content:flex-end;gap:8px;width:100%;margin-bottom:6px}
+.auto-row{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;margin-bottom:6px}
+.auto-row .auto-btns{display:flex;gap:8px}
+.notify-toggle{display:flex;align-items:center;gap:6px}
+.notify-toggle .nt-label{font-size:12px;font-weight:800;color:#c0560f;white-space:nowrap}
+.notify-toggle .nt-switch{width:auto;min-width:0;margin:0;padding:3px;gap:2px;background:var(--bg)}
+.notify-toggle .nt-switch .radio-option{padding:0 10px;font-size:12px}
+.notify-toggle .nt-switch .radio-option:hover .seg-txt{color:#c0560f}
+.notify-toggle .nt-switch input[value="on"]:checked+.seg-txt{background:linear-gradient(135deg,#e67e22,#d35400);box-shadow:0 3px 10px rgba(230,126,34,.32)}
 .auto-row .btn-auto,.auto-row .btn-reset{padding:8px 18px;border:none;border-radius:var(--r2);font-size:12px;font-weight:800;cursor:pointer;transition:transform var(--dur) var(--ease),box-shadow var(--dur);min-width:64px;font-family:var(--font);letter-spacing:.3px}
 .auto-row .btn-auto{background:linear-gradient(135deg,var(--p),#1f57c4);color:#fff;box-shadow:0 6px 16px rgba(47,111,237,.3)}
 .auto-row .btn-reset{background:linear-gradient(135deg,#9aa9c0,#7286a3);color:#fff;box-shadow:0 6px 16px rgba(114,134,163,.28)}
@@ -247,8 +254,12 @@ body::after{
   .input-group label,.net-group label{width:56px;font-size:11px}
   .input-group.m-align>label,.net-group.m-align>label{width:60px;font-size:10px;white-space:nowrap}
   .input-group input,.net-group input{font-size:13px;padding:9px 2px 9px 4px}
-  .auto-row{margin-bottom:3px;justify-content:flex-end}
-  .auto-row .btn-auto,.auto-row .btn-reset{font-size:10px;padding:7px 12px;min-width:48px}
+  .auto-row{margin-bottom:3px;justify-content:space-between;gap:4px}
+  .auto-row .auto-btns{gap:4px}
+  .notify-toggle{gap:4px}
+  .notify-toggle .nt-label{font-size:10px}
+  .notify-toggle .nt-switch .radio-option{padding:0 7px;font-size:10px}
+  .auto-row .btn-auto,.auto-row .btn-reset{font-size:10px;padding:7px 10px;min-width:48px}
   .btn-group{margin:4px 0 5px;gap:5px}
   .btn-fetch{font-size:11px;padding:9px 2px;border-radius:var(--r1)}
   #statusMsg{font-size:10px;min-height:14px;margin-bottom:3px}
@@ -312,7 +323,16 @@ body::after{
     <div class="net-group"><label>交易对象</label><input type="text" id="target" inputmode="text" lang="zh-CN"></div>
   </div>
   <div class="input-group m-align"><label>基金代码</label><input type="text" id="code" class="fund-code"><span id="nameDisplay" class="fund-name">—</span></div>
-  <div class="auto-row"><button class="btn-auto" id="autoBtn">📋 自动登记</button><button class="btn-reset" id="resetBtn">🔄 重置</button></div>
+  <div class="auto-row">
+    <div class="notify-toggle" id="notifyToggle">
+      <span class="nt-label">🔔 净值推送</span>
+      <div class="radio-group nt-switch" id="notifySwitch">
+        <label class="radio-option"><input type="radio" name="notifyOn" value="off" checked><span class="seg-txt">关</span></label>
+        <label class="radio-option"><input type="radio" name="notifyOn" value="on"><span class="seg-txt">开</span></label>
+      </div>
+    </div>
+    <div class="auto-btns"><button class="btn-auto" id="autoBtn">📋 自动登记</button><button class="btn-reset" id="resetBtn">🔄 重置</button></div>
+  </div>
   <div class="input-group m-align"><label>买入日期</label><input type="date" id="buyDate"></div>
   <div class="input-group m-align"><label>免手续费</label><select id="feeFreeDays"><option value="7" selected>7天（默认）</option><option value="30">30天</option><option value="custom">自定义</option></select><input type="number" id="feeFreeCustom" class="fee-custom" min="1" step="1" placeholder="天数" style="display:none"></div>
   <div class="input-group m-align"><label>卖出日期</label><input type="date" id="sellDate"></div>
@@ -338,19 +358,16 @@ body::after{
     <button class="btn-fetch latest" id="syncLinkBtn" style="flex:1;background:linear-gradient(135deg,#9b59b6,#8e44ad);box-shadow:0 4px 12px rgba(155,89,182,.25);">🔗 生成同步链接</button>
     <input type="file" id="fileInput" accept=".json" style="display:none">
   </div>
-  <div class="backup-row" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
-    <button class="btn-fetch latest" id="notifyBtn" style="flex:1;background:linear-gradient(135deg,#e67e22,#d35400);box-shadow:0 4px 12px rgba(230,126,34,.25);">🔔 净值提醒</button>
-  </div>
   <div class="hint">所有输入自动计算 · 数据保存在本地</div>
 </div>
 
 <!-- 净值提醒设置弹窗 -->
 <div class="modal-overlay" id="notifyModal">
   <div class="modal">
-    <div class="modal-header"><h3>🔔 净值到齐提醒</h3><button class="modal-close" id="closeNotify">✕</button></div>
+    <div class="modal-header"><h3>🔔 净值推送设置</h3><button class="modal-close" id="closeNotify">✕</button></div>
     <div class="modal-body tutorial-content" style="padding:14px 16px;font-size:13px;line-height:1.7;">
       <div id="notifyStatus" style="margin-bottom:10px;"></div>
-      <p style="margin:6px 0;color:#555;">开启后，系统会定时检查你<b>今日应结算</b>的基金净值。净值一公布，就自动推送到你的微信，不用再手动反复试。</p>
+      <p style="margin:6px 0;color:#555;">开启后，系统会在每个交易日 <b>19:00–23:00</b> 每 3 分钟检查一次你<b>今日应结算</b>的基金净值。净值一公布，就自动推送到你的微信，不用再手动反复试。</p>
       <div class="input-group m-align" style="margin:10px 0;"><label>Server酱 SendKey</label><input type="text" id="sendKeyInput" placeholder="SCT 开头的 SendKey" autocomplete="off"></div>
       <p style="margin:6px 0;font-size:12px;color:#888;">
         获取方式：打开 <a href="https://sct.ftqq.com" target="_blank" rel="noopener" style="color:#2b6cb0;">sct.ftqq.com</a> → 微信扫码登录 → 复制「SendKey」粘贴到上方。<br>
@@ -364,7 +381,7 @@ body::after{
     <div class="modal-footer">
       <button class="btn-save" id="saveNotify" style="flex:1;">💾 保存并开启</button>
       <button class="btn-view" id="closeNotifyBtn" style="flex:1;">取消</button>
-      <button class="btn-clear" id="disableNotify">关闭提醒</button>
+      <button class="btn-clear" id="disableNotify">关闭推送</button>
     </div>
   </div>
 </div>
@@ -1117,31 +1134,61 @@ const SENDKEY_STORAGE='fund_notify_sendkey';
 function getSendKey(){try{return (localStorage.getItem(SENDKEY_STORAGE)||'').trim();}catch(e){return '';}}
 function setSendKey(k){try{if(k)localStorage.setItem(SENDKEY_STORAGE,k);else localStorage.removeItem(SENDKEY_STORAGE);}catch(e){}}
 
-// 把「尚未出卖出净值、且卖出日期为今天或未来」的记录同步上云（这些是需要盯净值的）
+// 只把「卖出日期 = 今天（北京时间）且卖出净值还没填」的当日应结算记录同步上云
 async function syncWatchlist(){
   const key=getSendKey();
   if(!key)return;
-  const today=new Date().toISOString().slice(0,10);
+  const today=new Date(Date.now()+8*3600*1000).toISOString().slice(0,10);
   const items=historyRecords
-    .filter(r=>r.fundCode&&r.sellDate&&r.sellDate>=today&&(!r.sellPrice||r.sellPrice==='—'||String(r.sellPrice).trim()===''))
+    .filter(r=>r.fundCode&&r.sellDate===today&&(!r.sellPrice||r.sellPrice==='—'||String(r.sellPrice).trim()===''))
     .map(r=>({fundCode:r.fundCode,fundName:r.fundName||'',buyDate:r.buyDate||'',sellDate:r.sellDate}));
   try{
     await fetch(NOTIFY_ENDPOINT+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key,items})});
   }catch(e){/* 静默失败，绝不影响计算器本身 */}
 }
 
+// 同步开关 UI 状态（开/关二选一，以是否配置了 SendKey 为准）
+function renderNotifySwitch(){
+  const on=!!getSendKey();
+  const rOn=document.querySelector('input[name="notifyOn"][value="on"]');
+  const rOff=document.querySelector('input[name="notifyOn"][value="off"]');
+  if(rOn)rOn.checked=on;
+  if(rOff)rOff.checked=!on;
+}
 function renderNotifyStatus(){
   const key=getSendKey(),el=$('notifyStatus');
   if(!el)return;
-  if(key){el.innerHTML='<span style="color:#1e8449;font-weight:700;">✅ 提醒已开启</span>　当前 Key：<code>'+key.slice(0,6)+'***'+key.slice(-4)+'</code>';$('sendKeyInput').value=key;}
-  else{el.innerHTML='<span style="color:#999;">⚪ 提醒未开启</span>';$('sendKeyInput').value='';}
+  if(key){el.innerHTML='<span style="color:#1e8449;font-weight:700;">✅ 推送已开启</span>　当前 Key：<code>'+key.slice(0,6)+'***'+key.slice(-4)+'</code>';$('sendKeyInput').value=key;}
+  else{el.innerHTML='<span style="color:#999;">⚪ 推送未开启</span>';$('sendKeyInput').value='';}
 }
 function openNotify(){renderNotifyStatus();$('notifyModal').classList.add('active');document.body.style.overflow='hidden';}
 function closeNotify(){$('notifyModal').classList.remove('active');document.body.style.overflow='';}
-$('notifyBtn').addEventListener('click',openNotify);
-$('closeNotify').addEventListener('click',closeNotify);
-$('closeNotifyBtn').addEventListener('click',closeNotify);
-$('notifyModal').addEventListener('click',function(e){if(e.target===this)closeNotify();});
+$('closeNotify').addEventListener('click',function(){renderNotifySwitch();closeNotify();});
+$('closeNotifyBtn').addEventListener('click',function(){renderNotifySwitch();closeNotify();});
+$('notifyModal').addEventListener('click',function(e){if(e.target===this){renderNotifySwitch();closeNotify();}});
+
+// 「净值推送」开关：开 / 关 二选一
+function doDisableNotify(){
+  const key=getSendKey();
+  if(key){try{return fetch(NOTIFY_ENDPOINT+'/unsub',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key})});}catch(e){}}
+  return Promise.resolve();
+}
+Array.prototype.forEach.call(document.querySelectorAll('input[name="notifyOn"]'),function(r){
+  r.addEventListener('change',async function(){
+    if(this.value==='off'){
+      await doDisableNotify();
+      setSendKey('');renderNotifySwitch();renderNotifyStatus();
+      setStatus('✅ 已关闭净值推送，云端数据已删除','success');
+    }else if(this.value==='on'){
+      if(getSendKey()){ // 已配置过 Key，直接开启并刷新清单
+        await syncWatchlist();renderNotifySwitch();
+        setStatus('✅ 净值推送已开启，今日待结算项目会进入监控','success');
+      }else{ // 首次开启，弹窗引导填写 SendKey
+        openNotify();
+      }
+    }
+  });
+});
 $('saveNotify').addEventListener('click',async function(){
   const k=$('sendKeyInput').value.trim();
   if(!/^SCT[A-Za-z0-9]{8,}$/.test(k)&&k.length<10){setStatus('❌ Key 格式不对，应填 SCT 开头的 SendKey','error');return;}
@@ -1149,17 +1196,16 @@ $('saveNotify').addEventListener('click',async function(){
   this.disabled=true;this.textContent='⏳ 正在开启...';
   await syncWatchlist();
   this.disabled=false;this.textContent='💾 保存并开启';
-  renderNotifyStatus();
-  setStatus('✅ 净值提醒已开启，今日待结算项目会进入监控','success');
+  renderNotifyStatus();renderNotifySwitch();
+  setStatus('✅ 净值推送已开启，今日待结算项目会进入监控','success');
   closeNotify();
 });
 $('disableNotify').addEventListener('click',async function(){
-  const key=getSendKey();
-  if(key){try{await fetch(NOTIFY_ENDPOINT+'/unsub',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key})});}catch(e){}}
-  setSendKey('');renderNotifyStatus();setStatus('✅ 已关闭净值提醒，云端数据已删除','success');closeNotify();
+  await doDisableNotify();
+  setSendKey('');renderNotifyStatus();renderNotifySwitch();setStatus('✅ 已关闭净值推送，云端数据已删除','success');closeNotify();
 });
-// 页面打开时，若已开启提醒则刷新一次云端清单（弥补"仅本机同步"的时效）
-window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(getSendKey())syncWatchlist();},1200);});
+// 页面打开时：同步开关显示；若已开启则刷新一次云端清单（弥补"仅本机同步"的时效）
+window.addEventListener('DOMContentLoaded',function(){renderNotifySwitch();setTimeout(function(){if(getSendKey())syncWatchlist();},1200);});
 
 // 同步链接
 function loadLZString(cb){if(typeof LZString!=='undefined'){cb();return;}  /* lz-string 已内联，无需联网 */}
