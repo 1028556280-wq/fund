@@ -1132,7 +1132,7 @@ $('importBackup').addEventListener('click',function(){$('fileInput').click();});
 $('fileInput').addEventListener('change',function(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const imported=JSON.parse(ev.target.result);if(!Array.isArray(imported)||!imported.length){setStatus('⚠️ 文件格式错误或为空','warning');return;}const merge=confirm(`检测到 ${imported.length} 条记录。\n点击「确定」合并（不覆盖）\n点击「取消」覆盖当前数据`);if(!merge){historyRecords=imported;}else{const set=new Set(historyRecords.map(r=>JSON.stringify(r)));let added=0;imported.forEach(r=>{const k=JSON.stringify(r);if(!set.has(k)){historyRecords.push(r);set.add(k);added++;}});setStatus(`✅ 合并完成，新增 ${added} 条，总计 ${historyRecords.length} 条`,'success');}saveHistory();if($('historyModal').classList.contains('active'))renderHistory();showAlert();setStatus(`✅ 数据导入成功，当前共 ${historyRecords.length} 条记录`,'success');}catch(err){setStatus('❌ 导入失败：'+err.message,'error');}};reader.readAsText(file);e.target.value='';});
 
 // ========== 净值到齐提醒（多用户隔离） ==========
-const NOTIFY_ENDPOINT='https://fund-notify.1028556280.workers.dev';
+const NOTIFY_ENDPOINT='https://notify.fundpush-ttxs.top';
 const SENDKEY_STORAGE='fund_notify_sendkey';
 function getSendKey(){try{return (localStorage.getItem(SENDKEY_STORAGE)||'').trim();}catch(e){return '';}}
 function setSendKey(k){try{if(k)localStorage.setItem(SENDKEY_STORAGE,k);else localStorage.removeItem(SENDKEY_STORAGE);}catch(e){}}
