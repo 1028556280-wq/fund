@@ -351,14 +351,15 @@ body::after{
     <div class="modal-body tutorial-content" style="padding:14px 16px;font-size:13px;line-height:1.7;">
       <div id="notifyStatus" style="margin-bottom:10px;"></div>
       <p style="margin:6px 0;color:#555;">开启后，系统会定时检查你<b>今日应结算</b>的基金净值。净值一公布，就自动推送到你的微信，不用再手动反复试。</p>
-      <div class="input-group m-align" style="margin:10px 0;"><label>Server酱 Key</label><input type="text" id="sendKeyInput" placeholder="SCT 开头的 SendKey" autocomplete="off"></div>
+      <div class="input-group m-align" style="margin:10px 0;"><label>WxPusher SPT</label><input type="text" id="sendKeyInput" placeholder="SPT_ 开头，扫码即得" autocomplete="off"></div>
       <p style="margin:6px 0;font-size:12px;color:#888;">
-        获取方式：打开 <a href="https://sct.ftqq.com" target="_blank" rel="noopener" style="color:#2b6cb0;">sct.ftqq.com</a> → 微信扫码登录 → 复制「SendKey」粘贴到上方。
+        获取方式：微信扫下面二维码 → 复制拿到的「SPT」粘贴到上方（免费、无需注册）。<br>
+        <a href="https://wxpusher.zjiecode.com/api/qrcode/RwjGLMOPTYp35zSYQr0HxbCPrV9eU0wKVBXU1D5VVtya0cQXEJWPjqBdW3gKLifS.jpg" target="_blank" rel="noopener" style="color:#2b6cb0;">👉 点此打开获取 SPT 的二维码</a>
       </p>
       <div style="background:#fff8e6;border:1px solid #f0d999;border-radius:8px;padding:8px 10px;font-size:12px;color:#8a6d1f;margin:10px 0;">
-        🔒 隐私说明：你的 Key 仅用于给你自己推送，按 Key 独立隔离；它和你的待结算清单会存到云端数据库（站主可见）。Key 只保存在你这台设备的浏览器里。不想用了可随时点「关闭提醒」删除云端数据。
+        🔒 隐私说明：你的 SPT 仅用于给你自己推送，按 SPT 独立隔离；它和你的待结算清单会存到云端数据库（站主可见）。SPT 只保存在你这台设备的浏览器里。⚠️ SPT 泄露后别人能给你发消息，请勿外传。不想用了可随时点「关闭提醒」删除云端数据。
       </div>
-      <p style="margin:6px 0;font-size:12px;color:#888;">💡 每台设备各填一次自己的 Key；日期与基金代码按你本机的记录同步，某设备删除记录不会自动同步到别的设备。</p>
+      <p style="margin:6px 0;font-size:12px;color:#888;">💡 每台设备各填一次自己的 SPT；日期与基金代码按你本机的记录同步，某设备删除记录不会自动同步到别的设备。免费额度 2000 条/天，随便推。</p>
     </div>
     <div class="modal-footer">
       <button class="btn-save" id="saveNotify" style="flex:1;">💾 保存并开启</button>
@@ -1132,7 +1133,7 @@ async function syncWatchlist(){
 function renderNotifyStatus(){
   const key=getSendKey(),el=$('notifyStatus');
   if(!el)return;
-  if(key){el.innerHTML='<span style="color:#1e8449;font-weight:700;">✅ 提醒已开启</span>　当前 Key：<code>'+key.slice(0,6)+'***'+key.slice(-4)+'</code>';$('sendKeyInput').value=key;}
+  if(key){el.innerHTML='<span style="color:#1e8449;font-weight:700;">✅ 提醒已开启</span>　当前 SPT：<code>'+key.slice(0,7)+'***'+key.slice(-4)+'</code>';$('sendKeyInput').value=key;}
   else{el.innerHTML='<span style="color:#999;">⚪ 提醒未开启</span>';$('sendKeyInput').value='';}
 }
 function openNotify(){renderNotifyStatus();$('notifyModal').classList.add('active');document.body.style.overflow='hidden';}
@@ -1143,7 +1144,7 @@ $('closeNotifyBtn').addEventListener('click',closeNotify);
 $('notifyModal').addEventListener('click',function(e){if(e.target===this)closeNotify();});
 $('saveNotify').addEventListener('click',async function(){
   const k=$('sendKeyInput').value.trim();
-  if(!/^SCT[A-Za-z0-9]{8,}$/.test(k)&&k.length<10){setStatus('❌ Key 格式不对，应填 SCT 开头的 SendKey','error');return;}
+  if(!/^SPT_[A-Za-z0-9]{4,}$/.test(k)){setStatus('❌ SPT 格式不对，应为 SPT_ 开头（扫码获取）','error');return;}
   setSendKey(k);
   this.disabled=true;this.textContent='⏳ 正在开启...';
   await syncWatchlist();
