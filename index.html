@@ -1144,7 +1144,7 @@ async function syncWatchlist(){
   const today=new Date(Date.now()+8*3600*1000).toISOString().slice(0,10);
   const items=historyRecords
     .filter(r=>r.fundCode&&r.sellDate===today&&(!r.sellPrice||r.sellPrice==='—'||String(r.sellPrice).trim()===''))
-    .map(r=>({fundCode:r.fundCode,fundName:r.fundName||'',buyDate:r.buyDate||'',sellDate:r.sellDate}));
+    .map(r=>({fundCode:r.fundCode,fundName:r.fundName||'',buyDate:r.buyDate||'',sellDate:r.sellDate,tradeType:r.tradeType||'',amount:r.amount||'',bonusRate:r.bonusRate||'',buyPrice:r.buyPrice||'',dividendPrice:r.dividendPrice||'',tradeTarget:r.tradeTarget||''}));
   try{
     await fetch(NOTIFY_ENDPOINT+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key,items})});
   }catch(e){/* 静默失败，绝不影响计算器本身 */}
