@@ -370,8 +370,8 @@ body::after{
     <div class="modal-header"><h3>🔔 净值推送设置</h3><button class="modal-close" id="closeNotify">✕</button></div>
     <div class="modal-body tutorial-content" style="padding:14px 16px;font-size:13px;line-height:1.7;">
       <div id="notifyStatus" style="margin-bottom:10px;"></div>
-      <p style="margin:6px 0;color:#555;">开启后，系统会在每个交易日 <b>19:00–23:00</b> 每 3 分钟检查一次你<b>今日应结算</b>的基金净值。净值一公布，就自动推送到你的微信，不用再手动反复试。</p>
-      <div class="input-group m-align" style="margin:10px 0;"><label>Server酱 SendKey</label><input type="text" id="sendKeyInput" placeholder="SCT 开头的 SendKey" autocomplete="off"></div>
+      <p style="margin:6px 0;color:#555;">开启后，系统会在每个交易日 <b>19:00–23:00</b> 每 3 分钟检查一次你<b>当天到期应结算</b>的基金净值。净值一公布，就自动推送到你的微信，不用再手动反复试。今天及未来几天的待结算记录会提前同步到云端，到期当天自动推送，期间不开网页也能收到。</p>
+      <div class="input-group m-align" style="margin:10px 0;"><label>SendKey</label><input type="text" id="sendKeyInput" placeholder="SCT 开头的 SendKey" autocomplete="off"></div>
       <p style="margin:6px 0;font-size:12px;color:#888;">
         获取方式：打开 <a href="https://sct.ftqq.com" target="_blank" rel="noopener" style="color:#2b6cb0;">sct.ftqq.com</a> → 微信扫码登录 → 复制「SendKey」粘贴到上方。<br>
         💡 在 Server酱 后台把通道设为「企业微信应用消息」，可在微信里直接收到、不受公众号模板消息限制。
@@ -386,6 +386,24 @@ body::after{
       <button class="btn-view" id="closeNotifyBtn" style="flex:1;">取消</button>
       <button class="btn-clear" id="disableNotify">关闭推送</button>
     </div>
+  </div>
+</div>
+
+<!-- 更新说明弹窗（功能上线后每台设备首次打开强制弹一次） -->
+<div class="modal-overlay" id="updateModal">
+  <div class="modal">
+    <div class="modal-header"><h3>🆕 更新说明</h3><button class="modal-close" id="closeUpdate">✕</button></div>
+    <div class="modal-body" style="padding:14px 16px;font-size:13px;line-height:1.8;color:#444;">
+      <p style="margin:4px 0;font-weight:800;color:#c0560f;">本次更新：新增「净值推送」功能 🔔</p>
+      <p style="margin:6px 0;">
+        · 打开页面中部的「净值推送」开关，填入 Server酱 SendKey，即可在微信里自动收到推送；<br>
+        · 每个交易日 <b>19:00–23:00</b> 每 3 分钟自动检查净值，一公布就推送完整结算结果（含净收益与红包结算）；<br>
+        · <b>今天及未来几天</b>的待结算记录会提前同步到云端，到期当天自动推送——期间不开网页、电脑关机也能准时收到；<br>
+        · 买入净值留空时会自动按买入日期查历史净值补齐，结算金额直接算好推送。
+      </p>
+      <p style="margin:6px 0;font-size:12px;color:#888;">无需一直开着电脑或网页，云端定时任务自动运行。想关闭随时把开关拨回「关」。</p>
+    </div>
+    <div class="modal-footer"><button class="btn-save" id="updateOk" style="flex:1;">我知道了，开始使用</button></div>
   </div>
 </div>
 
@@ -1137,13 +1155,14 @@ const SENDKEY_STORAGE='fund_notify_sendkey';
 function getSendKey(){try{return (localStorage.getItem(SENDKEY_STORAGE)||'').trim();}catch(e){return '';}}
 function setSendKey(k){try{if(k)localStorage.setItem(SENDKEY_STORAGE,k);else localStorage.removeItem(SENDKEY_STORAGE);}catch(e){}}
 
-// 只把「卖出日期 = 今天（北京时间）且卖出净值还没填」的当日应结算记录同步上云
+// 只把「卖出日期 >= 今天（北京时间）且卖出净值还没填」的未结算记录同步上云，
+// 未来几天的记录提前进云端清单，之后不开网页云端也会在到期当天自动推送
 async function syncWatchlist(){
   const key=getSendKey();
   if(!key)return;
   const today=new Date(Date.now()+8*3600*1000).toISOString().slice(0,10);
   const items=historyRecords
-    .filter(r=>r.fundCode&&r.sellDate===today&&(!r.sellPrice||r.sellPrice==='—'||String(r.sellPrice).trim()===''))
+    .filter(r=>r.fundCode&&r.sellDate>=today&&(!r.sellPrice||r.sellPrice==='—'||String(r.sellPrice).trim()===''))
     .map(r=>({fundCode:r.fundCode,fundName:r.fundName||'',buyDate:r.buyDate||'',sellDate:r.sellDate,tradeType:r.tradeType||'',amount:r.amount||'',bonusRate:r.bonusRate||'',buyPrice:r.buyPrice||'',dividendPrice:r.dividendPrice||'',tradeTarget:r.tradeTarget||''}));
   try{
     await fetch(NOTIFY_ENDPOINT+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key,items})});
@@ -1185,7 +1204,7 @@ Array.prototype.forEach.call(document.querySelectorAll('input[name="notifyOn"]')
     }else if(this.value==='on'){
       if(getSendKey()){ // 已配置过 Key，直接开启并刷新清单
         await syncWatchlist();renderNotifySwitch();
-        setStatus('✅ 净值推送已开启，今日待结算项目会进入监控','success');
+        setStatus('✅ 净值推送已开启，今日及未来的待结算项目都会进入监控','success');
       }else{ // 首次开启，弹窗引导填写 SendKey
         openNotify();
       }
@@ -1200,15 +1219,25 @@ $('saveNotify').addEventListener('click',async function(){
   await syncWatchlist();
   this.disabled=false;this.textContent='💾 保存并开启';
   renderNotifyStatus();renderNotifySwitch();
-  setStatus('✅ 净值推送已开启，今日待结算项目会进入监控','success');
+  setStatus('✅ 净值推送已开启，今日及未来的待结算项目都会进入监控','success');
   closeNotify();
 });
 $('disableNotify').addEventListener('click',async function(){
   await doDisableNotify();
   setSendKey('');renderNotifyStatus();renderNotifySwitch();setStatus('✅ 已关闭净值推送，云端数据已删除','success');closeNotify();
 });
-// 页面打开时：同步开关显示；若已开启则刷新一次云端清单（弥补"仅本机同步"的时效）
-window.addEventListener('DOMContentLoaded',function(){renderNotifySwitch();setTimeout(function(){if(getSendKey())syncWatchlist();},1200);});
+// ===== 更新说明弹窗：每次功能上线后，每台设备首次打开强制弹一次 =====
+const UPDATE_NOTE_KEY='UPDATE_NOTE_SEEN_NAVPUSH_20261120';
+function showUpdateNote(){const m=$('updateModal');if(!m)return;m.classList.add('active');document.body.style.overflow='hidden';}
+function closeUpdateNote(){const m=$('updateModal');if(!m)return;m.classList.remove('active');document.body.style.overflow='';try{localStorage.setItem(UPDATE_NOTE_KEY,'1');}catch(e){}}
+$('closeUpdate').addEventListener('click',closeUpdateNote);
+$('updateOk').addEventListener('click',closeUpdateNote);
+// 页面打开时：更新说明弹一次（每设备一次）；同步开关显示；若已开启则刷新一次云端清单（弥补"仅本机同步"的时效）
+window.addEventListener('DOMContentLoaded',function(){
+  let seen=true;try{seen=!!localStorage.getItem(UPDATE_NOTE_KEY);}catch(e){}
+  if(!seen)setTimeout(showUpdateNote,600);
+  renderNotifySwitch();setTimeout(function(){if(getSendKey())syncWatchlist();},1200);
+});
 
 // 同步链接
 function loadLZString(cb){if(typeof LZString!=='undefined'){cb();return;}  /* lz-string 已内联，无需联网 */}
