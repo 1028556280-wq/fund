@@ -81,8 +81,24 @@ body::after{
 .alert-bar{text-align:center;font-size:13px;font-weight:700;padding:6px 10px;margin-bottom:10px;border-radius:var(--r1);background:transparent;color:#c0392b;min-height:26px;transition:all var(--dur)}
 .alert-bar.has-alert{background:#fdeceb;border:1px solid #f6c9c4;color:var(--r);box-shadow:var(--s1)}
 .alert-bar.no-alert{background:transparent;border:none;color:var(--gray);font-weight:500;font-size:11px}
-.section-title{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--p);margin-bottom:6px;padding-bottom:4px;border-bottom:1px dashed var(--bdr);display:flex;align-items:center;gap:6px}
+.section-title{position:relative;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--p);margin-bottom:6px;padding-bottom:4px;border-bottom:1px dashed var(--bdr);display:flex;align-items:center;gap:6px}
 .section-title::before{content:"";width:4px;height:12px;border-radius:2px;background:linear-gradient(180deg,var(--p),var(--accent));display:inline-block}
+/* 关注基金按钮：绝对定位在「参数设置」标题行右侧，不占文档流、不增加页面高度 */
+.section-title .follow-open-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#fff6e5,#ffefd2);border:1px solid #e8c887;color:#a86a12;font-size:10px;font-weight:800;line-height:12px;padding:2px 8px;border-radius:9px;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:background var(--dur),box-shadow var(--dur)}
+.section-title .follow-open-btn:hover{background:#ffefd2;box-shadow:0 2px 8px rgba(246,166,35,.25)}
+.section-title .follow-open-btn:active{background:#ffe6bd}
+.section-title .follow-open-btn .fob-count{background:#a86a12;color:#fff;border-radius:8px;padding:0 4px;font-size:9px;line-height:12px;min-width:13px;text-align:center}
+/* 关注管理弹窗内元素 */
+#followModal .fm-tip{font-size:12px;color:var(--gray);line-height:1.7;margin:0 0 12px}
+#followModal .fm-add{display:flex;gap:8px;margin-bottom:12px}
+#followModal .fm-add input{flex:1;min-width:0;background:var(--bg);border:1.5px solid transparent;border-radius:var(--r2);padding:9px 12px;font-size:13px;font-family:var(--font);color:var(--txt)}
+#followModal .fm-add input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+#followModal .fm-add button{border:none;background:linear-gradient(135deg,#f6a623,#e08a0b);color:#fff;font-size:12px;font-weight:800;padding:0 18px;border-radius:var(--r2);cursor:pointer;font-family:var(--font);white-space:nowrap}
+#followModal .fm-code{color:#a86a12;font-weight:800;letter-spacing:.3px}
+@media(max-width:600px){
+  .section-title .follow-open-btn{font-size:9px;gap:3px;padding:2px 6px}
+  .section-title .follow-open-btn .fob-count{font-size:8px;padding:0 3px;min-width:11px}
+}
 .input-group,.radio-group,.net-group{display:flex;align-items:center;width:100%;background:var(--bg);border-radius:var(--r2);padding:0 12px 0 14px;border:1.5px solid transparent;transition:border-color var(--dur),background var(--dur),box-shadow var(--dur)}
 .input-group,.radio-group{margin-bottom:6px}
 .net-group{margin-bottom:4px;border-radius:12px}
@@ -313,7 +329,7 @@ body::after{
     <div class="title-wrapper"><h1>基金收益计算器</h1><button class="tutorial-btn" id="tutorialBtn">❓</button></div>
   </div>
   <div id="alertBar" class="alert-bar no-alert">📋 今日无应结算</div>
-  <div class="section-title">📋 参数设置</div>
+  <div class="section-title">📋 参数设置<button class="follow-open-btn" id="followOpenBtn">⭐ 我的关注 <span class="fob-count" id="followCount">0</span></button></div>
   <div class="m-row row-amount-type">
     <div class="input-group"><label>金额(元)</label><input type="number" id="amount" step="any"></div>
     <div class="radio-group" id="tradeGroup">
@@ -389,16 +405,36 @@ body::after{
   </div>
 </div>
 
+<!-- 关注基金管理弹窗（表格） -->
+<div class="modal-overlay" id="followModal">
+  <div class="modal">
+    <div class="modal-header"><h3>⭐ 我的关注基金</h3><button class="modal-close" id="followCloseBtn">✕</button></div>
+    <div class="modal-body" style="padding:4px 2px;">
+      <p class="fm-tip">关注的基金每天净值更新后，会自动推送一条简版行情（今日涨幅 ｜ 近一周 ｜ 万元净收益），不占用交易记录。</p>
+      <div class="fm-add">
+        <input type="text" id="followCodeInput" placeholder="输入 6 位基金代码" inputmode="numeric" maxlength="6">
+        <button id="followAddBtn">＋ 添加关注</button>
+      </div>
+      <table id="followTable">
+        <thead><tr><th style="width:90px;">基金代码</th><th>基金名称</th><th style="width:50px;">操作</th></tr></thead>
+        <tbody id="followTbody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer"><button class="btn-save" id="followDoneBtn" style="flex:1;">完成</button></div>
+  </div>
+</div>
+
 <!-- 更新说明弹窗（功能上线后每台设备首次打开强制弹一次） -->
 <div class="modal-overlay" id="updateModal">
   <div class="modal">
     <div class="modal-header"><h3>🆕 更新说明</h3><button class="modal-close" id="closeUpdate">✕</button></div>
     <div class="modal-body" style="padding:14px 16px;font-size:13px;line-height:1.8;color:#444;">
-      <p style="margin:4px 0;font-weight:800;color:#c0560f;">本次更新：新增「净值推送」功能 🔔</p>
+      <p style="margin:4px 0;font-weight:800;color:#c0560f;">本次更新：净值推送 + 关注基金 ⭐🔔</p>
       <p style="margin:6px 0;">
         · 打开页面中部的「净值推送」开关，填入 Server酱 SendKey，即可在微信里自动收到推送；<br>
         · 每个交易日 <b>19:00–23:00</b> 每 3 分钟自动检查净值，一公布就推送完整结算结果（含净收益与红包结算）；<br>
         · <b>今天及未来几天</b>的待结算记录会提前同步到云端，到期当天自动推送——期间不开网页、电脑关机也能准时收到；<br>
+        · 新增 <b>「⭐ 我的关注」</b>按钮（参数设置标题右侧）：点击打开表格，输入基金代码添加关注。关注的基金每天净值更新后会自动推一条简版行情——今日涨幅 ｜ 近一周 ｜ 万元净收益，不占用交易记录。<br>
         · 买入净值留空时会自动按买入日期查历史净值补齐，结算金额直接算好推送。
       </p>
       <p style="margin:6px 0;font-size:12px;color:#888;">无需一直开着电脑或网页，云端定时任务自动运行。想关闭随时把开关拨回「关」。</p>
@@ -1169,6 +1205,51 @@ async function syncWatchlist(){
   }catch(e){/* 静默失败，绝不影响计算器本身 */}
 }
 
+// ===== 关注基金列表 =====
+const FOLLOW_STORAGE='fund_follow_list';
+let followList=[];
+function loadFollow(){try{const a=JSON.parse(localStorage.getItem(FOLLOW_STORAGE)||'[]');followList=Array.isArray(a)?a.filter(x=>x&&/^\d{6}$/.test(String(x.code||''))).map(x=>({code:String(x.code),name:String(x.name||'')})):[];}catch(e){followList=[];}}
+function saveFollowLocal(){try{localStorage.setItem(FOLLOW_STORAGE,JSON.stringify(followList));}catch(e){}}
+function renderFollow(){
+  const cnt=$('followCount');if(cnt)cnt.textContent=String(followList.length);
+  const tbody=$('followTbody');if(!tbody)return;
+  if(!followList.length){tbody.innerHTML='<tr><td colspan="3" class="empty-msg">暂无关注，在上方输入基金代码添加</td></tr>';return;}
+  tbody.innerHTML=followList.map((f,i)=>'<tr><td class="fm-code">'+f.code+'</td><td>'+(f.name||'—')+'</td><td><button class="del-btn" data-i="'+i+'" title="移除">🗑</button></td></tr>').join('');
+  tbody.querySelectorAll('.del-btn').forEach(el=>el.addEventListener('click',function(){const i=parseInt(this.getAttribute('data-i'),10);if(isFinite(i)&&confirm('移除关注 '+followList[i].code+'？')){followList.splice(i,1);saveFollowLocal();renderFollow();syncFollow();}}));
+}
+function lookupFollowName(code,cb){
+  if(nameCache[code]){cb(nameCache[code]);return;}
+  const cbp='fsub_'+Date.now()+'_'+Math.random().toString(36).substr(2,4);
+  const url='https://fundsuggest.eastmoney.com/FundSearch/api/FundSearchAPI.ashx?m=1&key='+encodeURIComponent(code)+'&callback='+cbp+'&_='+Date.now();
+  window[cbp]=function(data){let name='';if(data&&data.Datas){const found=data.Datas.find(function(d){return String(d.CODE)===code;});if(found)name=found.NAME||found.SHORTNAME||'';}nameCache[code]=name;cb(name);delete window[cbp];};
+  const s=document.createElement('script');s.src=url;s.onerror=function(){cb('');delete window[cbp];};document.head.appendChild(s);
+}
+function addFollow(){
+  const inp=$('followCodeInput');if(!inp)return;
+  const code=inp.value.replace(/\D/g,'').trim();
+  if(!/^\d{6}$/.test(code)){setStatus('⚠️ 请输入 6 位基金代码','warning');return;}
+  if(followList.some(function(f){return f.code===code;})){setStatus('⚠️ 该基金已在关注列表','warning');inp.value='';return;}
+  const item={code:code,name:''};followList.push(item);saveFollowLocal();renderFollow();inp.value='';
+  lookupFollowName(code,function(name){item.name=name;saveFollowLocal();renderFollow();});
+  syncFollow();setStatus('✅ 已关注 '+code+'，净值更新后自动推送','success');
+}
+async function syncFollow(){
+  const key=getSendKey();if(!key)return;
+  const items=followList.map(f=>({fundCode:f.code,fundName:f.name||''}));
+  try{await fetch(NOTIFY_ENDPOINT+'/syncFollow',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key,items})});}catch(e){}
+}
+function openFollowModal(){const m=$('followModal');if(!m)return;renderFollow();m.classList.add('active');document.body.style.overflow='hidden';}
+function closeFollowModal(){const m=$('followModal');if(!m)return;m.classList.remove('active');document.body.style.overflow='';}
+function initFollow(){
+  loadFollow();renderFollow();
+  const ob=$('followOpenBtn');if(ob)ob.addEventListener('click',openFollowModal);
+  const cb=$('followCloseBtn');if(cb)cb.addEventListener('click',closeFollowModal);
+  const db=$('followDoneBtn');if(db)db.addEventListener('click',closeFollowModal);
+  const fm=$('followModal');if(fm)fm.addEventListener('click',function(e){if(e.target===this)closeFollowModal();});
+  const add=$('followAddBtn');if(add)add.addEventListener('click',addFollow);
+  const inp=$('followCodeInput');if(inp)inp.addEventListener('keydown',function(e){if(e.key==='Enter')addFollow();});
+}
+
 // 同步开关 UI 状态（开/关二选一，以是否配置了 SendKey 为准）
 function renderNotifySwitch(){
   const on=!!getSendKey();
@@ -1203,7 +1284,7 @@ Array.prototype.forEach.call(document.querySelectorAll('input[name="notifyOn"]')
       setStatus('✅ 已关闭净值推送，云端数据已删除','success');
     }else if(this.value==='on'){
       if(getSendKey()){ // 已配置过 Key，直接开启并刷新清单
-        await syncWatchlist();renderNotifySwitch();
+        await Promise.all([syncWatchlist(),syncFollow()]);renderNotifySwitch();
         setStatus('✅ 净值推送已开启，今日及未来的待结算项目都会进入监控','success');
       }else{ // 首次开启，弹窗引导填写 SendKey
         openNotify();
@@ -1216,7 +1297,7 @@ $('saveNotify').addEventListener('click',async function(){
   if(!/^SCT[A-Za-z0-9]{8,}$/.test(k)&&k.length<10){setStatus('❌ Key 格式不对，应填 SCT 开头的 SendKey','error');return;}
   setSendKey(k);
   this.disabled=true;this.textContent='⏳ 正在开启...';
-  await syncWatchlist();
+  await Promise.all([syncWatchlist(),syncFollow()]);
   this.disabled=false;this.textContent='💾 保存并开启';
   renderNotifyStatus();renderNotifySwitch();
   setStatus('✅ 净值推送已开启，今日及未来的待结算项目都会进入监控','success');
@@ -1236,7 +1317,7 @@ $('updateOk').addEventListener('click',closeUpdateNote);
 window.addEventListener('DOMContentLoaded',function(){
   let seen=true;try{seen=!!localStorage.getItem(UPDATE_NOTE_KEY);}catch(e){}
   if(!seen)setTimeout(showUpdateNote,600);
-  renderNotifySwitch();setTimeout(function(){if(getSendKey())syncWatchlist();},1200);
+  renderNotifySwitch();initFollow();setTimeout(function(){if(getSendKey()){syncWatchlist();syncFollow();}},1200);
 });
 
 // 同步链接
