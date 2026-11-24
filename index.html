@@ -1238,7 +1238,15 @@ async function syncFollow(){
   const items=followList.map(f=>({fundCode:f.code,fundName:f.name||''}));
   try{await fetch(NOTIFY_ENDPOINT+'/syncFollow',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key,items})});}catch(e){}
 }
-function openFollowModal(){const m=$('followModal');if(!m)return;renderFollow();m.classList.add('active');document.body.style.overflow='hidden';}
+function openFollowModal(){
+  // 关注基金依赖净值推送通道（云端按 SendKey 隔离并按其推送），必须先开启净值推送
+  if(!getSendKey()){
+    setStatus('⚠️ 请先开启「净值推送」并填写 SendKey，再管理我的关注','warning');
+    try{openNotify();}catch(e){}
+    return;
+  }
+  const m=$('followModal');if(!m)return;renderFollow();m.classList.add('active');document.body.style.overflow='hidden';
+}
 function closeFollowModal(){const m=$('followModal');if(!m)return;m.classList.remove('active');document.body.style.overflow='';}
 function initFollow(){
   loadFollow();renderFollow();
