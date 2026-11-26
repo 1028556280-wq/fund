@@ -976,8 +976,14 @@ function ensureXlsx(){return (typeof XLSX!=='undefined')?Promise.resolve():Promi
 async function exportExcel(records){try{await ensureXlsx();}catch(e){alert('Excel 导出组件加载失败，请检查网络后重试');return;}if(!records||!records.length){alert('暂无记录可导出');return;}const data=records.map((r,i)=>({'序号':i+1,'时间':r.timestamp||'','交易类型':r.tradeType||'','金额(元)':r.amount||'','红包(千分之)':r.bonusRate||'','基金代码':r.fundCode||'','基金名称':r.fundName||'','买入日期':r.buyDate||'','买入净值':r.buyPrice||'','卖出日期':r.sellDate||'','卖出净值':r.sellPrice||'','分红净值':r.dividendPrice||'','交易对象':r.tradeTarget||'','净收益(不含红包)':r.netProfit||'','收益率(%)':r.returnRate||'','结算(收包时，负数为转出)':r.finalResult||''}));const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(data);ws['!cols']=[{wch:6},{wch:20},{wch:10},{wch:12},{wch:14},{wch:12},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:12},{wch:14},{wch:18},{wch:12},{wch:28}];XLSX.utils.book_append_sheet(wb,ws,'历史记录');const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'}),blob=new Blob([buf],{type:'application/octet-stream'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='基金计算历史记录.xlsx';document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(link.href);}
 
 // ========== 保存记录 ==========
-function saveCurrentRecord(){const r=getCurrentRecord();historyRecords.push(r);saveHistory();setStatus(`✅ 已保存第 ${historyRecords.length} 条记录`,'success');showAlert();if(getSendKey())syncWatchlist();return r;}
-function deleteRecord(i){if(i<0||i>=historyRecords.length)return;if(!confirm(`确定删除第 ${i+1} 条吗？`))return;historyRecords.splice(i,1);saveHistory();if($('historyModal').classList.contains('active'))renderHistory();setStatus(`🗑️ 已删除，剩余 ${historyRecords.length} 条`,'warning');showAlert();}
+// 本地历史变更后：上传待结算清单到云端（同步触发，内部自带对齐；首登先建云端初始数据）
+function pushWatchlist(){
+  if(!getSendKey())return;
+  if(!cloudInited()){syncCloud();return;}
+  pullCloud(false).then(function(){syncWatchlist();});
+}
+function saveCurrentRecord(){const r=getCurrentRecord();historyRecords.push(r);saveHistory();setStatus(`✅ 已保存第 ${historyRecords.length} 条记录`,'success');showAlert();pushWatchlist();return r;}
+function deleteRecord(i){if(i<0||i>=historyRecords.length)return;if(!confirm(`确定删除第 ${i+1} 条吗？`))return;historyRecords.splice(i,1);saveHistory();if($('historyModal').classList.contains('active'))renderHistory();setStatus(`🗑️ 已删除，剩余 ${historyRecords.length} 条`,'warning');showAlert();pushWatchlist();}
 
 // ========== 复制 ==========
 function copyRecord(record){if(!record){setStatus('⚠️ 无有效记录可复制','warning');return;}const fields=[{label:'交易类型',key:'tradeType'},{label:'金额(元)',key:'amount'},{label:'红包(千分之)',key:'bonusRate'},{label:'基金代码',key:'fundCode'},{label:'基金名称',key:'fundName'},{label:'买入日期',key:'buyDate'},{label:'卖出日期',key:'sellDate'},{label:'买入净值',key:'buyPrice'},{label:'卖出净值',key:'sellPrice'},{label:'分红净值',key:'dividendPrice'},{label:'交易对象',key:'tradeTarget'},{label:'净收益(不含红包)',key:'netProfit'},{label:'收益率(%)',key:'returnRate'},{label:'结算(收包时，负数为转出)',key:'finalResult'}];const lines=[`📊 基金收益计算记录 (${new Date().toLocaleString('zh-CN',{hour12:false})})`,''];fields.forEach(item=>{let v=String(record[item.key]||'').trim();if(v&&v!=='—'&&v!=='未知基金')lines.push(`${item.label}：${v}`);});if(lines.length<=2){setStatus('⚠️ 没有有效数据可复制','warning');return;}const text=lines.join('\n');if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>setStatus('✅ 记录已复制到剪贴板','success')).catch(()=>fallbackCopy(text));else fallbackCopy(text);}
@@ -1004,7 +1010,7 @@ function editRecord(i){const r=historyRecords[i];if(!r)return;const form=$('edit
 <div class="edit-group"><label>结算</label><input type="text" id="eFinal" value="${r.finalResult||''}" readonly></div>
 `;$('editModal').dataset.editIndex=i;$('editModal').classList.add('active');document.body.style.overflow='hidden';}
 function closeEditModal(){$('editModal').classList.remove('active');document.body.style.overflow='';}
-function saveEditedRecord(){const i=parseInt($('editModal').dataset.editIndex);if(isNaN(i)||i<0||i>=historyRecords.length){alert('记录索引无效');return;}const r=historyRecords[i];const tradeType=document.querySelector('input[name="editTradeType"]:checked')?.value||'收包';const amount=$('eAmt').value,bonusRate=$('eBonus').value;const fundCode=$('eCode').value.trim(),fundName=$('eName').value.trim();const buyDate=$('eBuyDate').value,sellDate=$('eSellDate').value;const tradeTarget=$('eTarget').value.trim();if(!fundCode||!buyDate||!sellDate){alert('基金代码、买入日期、卖出日期不能为空');return;}r.tradeType=tradeType;r.amount=amount;r.bonusRate=bonusRate;r.fundCode=fundCode;r.fundName=fundName;r.buyDate=buyDate;r.sellDate=sellDate;r.tradeTarget=tradeTarget;r.dividendPrice=$('eDivPrice').value;saveHistory();closeEditModal();if($('historyModal').classList.contains('active'))renderHistory();setStatus('✅ 记录已更新','success');showAlert();}
+function saveEditedRecord(){const i=parseInt($('editModal').dataset.editIndex);if(isNaN(i)||i<0||i>=historyRecords.length){alert('记录索引无效');return;}const r=historyRecords[i];const tradeType=document.querySelector('input[name="editTradeType"]:checked')?.value||'收包';const amount=$('eAmt').value,bonusRate=$('eBonus').value;const fundCode=$('eCode').value.trim(),fundName=$('eName').value.trim();const buyDate=$('eBuyDate').value,sellDate=$('eSellDate').value;const tradeTarget=$('eTarget').value.trim();if(!fundCode||!buyDate||!sellDate){alert('基金代码、买入日期、卖出日期不能为空');return;}r.tradeType=tradeType;r.amount=amount;r.bonusRate=bonusRate;r.fundCode=fundCode;r.fundName=fundName;r.buyDate=buyDate;r.sellDate=sellDate;r.tradeTarget=tradeTarget;r.dividendPrice=$('eDivPrice').value;saveHistory();closeEditModal();if($('historyModal').classList.contains('active'))renderHistory();setStatus('✅ 记录已更新','success');showAlert();pushWatchlist();}
 
 // ========== 续（继承参数自动登记） ==========
 function continueRecord(index){
@@ -1150,7 +1156,7 @@ $('viewBtn').addEventListener('click',openModal);
 $('closeHistory').addEventListener('click',closeModal);
 $('historyModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 $('exportExcel').addEventListener('click',async function(){setStatus('⏳ 正在准备 Excel 导出...');await exportExcel(historyRecords);setStatus(`✅ 已导出 ${historyRecords.length} 条记录`,'success');});
-$('clearAll').addEventListener('click',function(){if(confirm('确定清空所有历史记录？不可撤销！')){historyRecords=[];saveHistory();renderHistory();setStatus('🗑️ 已清空所有历史记录','warning');if(!historyRecords.length)$('modalBody').innerHTML='<div class="empty-msg">暂无记录</div>';showAlert();}});
+$('clearAll').addEventListener('click',function(){if(confirm('确定清空所有历史记录？不可撤销！')){historyRecords=[];saveHistory();renderHistory();setStatus('🗑️ 已清空所有历史记录','warning');if(!historyRecords.length)$('modalBody').innerHTML='<div class="empty-msg">暂无记录</div>';showAlert();pushWatchlist();}});
 $('statsBtn').addEventListener('click',function(){openStats();renderStats();});
 $('closeStats').addEventListener('click',closeStats);
 $('statsModal').addEventListener('click',function(e){if(e.target===this)closeStats();});
@@ -1183,7 +1189,7 @@ $('autoBtn').addEventListener('click',autoRegister);
 // 备份与同步
 $('exportBackup').addEventListener('click',function(){if(!historyRecords.length){setStatus('⚠️ 暂无记录可导出','warning');return;}const blob=new Blob([JSON.stringify(historyRecords,null,2)],{type:'application/json'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`基金记录_${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(link.href);setStatus(`✅ 已导出 ${historyRecords.length} 条记录`,'success');});
 $('importBackup').addEventListener('click',function(){$('fileInput').click();});
-$('fileInput').addEventListener('change',function(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const imported=JSON.parse(ev.target.result);if(!Array.isArray(imported)||!imported.length){setStatus('⚠️ 文件格式错误或为空','warning');return;}const merge=confirm(`检测到 ${imported.length} 条记录。\n点击「确定」合并（不覆盖）\n点击「取消」覆盖当前数据`);if(!merge){historyRecords=imported;}else{const set=new Set(historyRecords.map(r=>JSON.stringify(r)));let added=0;imported.forEach(r=>{const k=JSON.stringify(r);if(!set.has(k)){historyRecords.push(r);set.add(k);added++;}});setStatus(`✅ 合并完成，新增 ${added} 条，总计 ${historyRecords.length} 条`,'success');}saveHistory();if($('historyModal').classList.contains('active'))renderHistory();showAlert();setStatus(`✅ 数据导入成功，当前共 ${historyRecords.length} 条记录`,'success');}catch(err){setStatus('❌ 导入失败：'+err.message,'error');}};reader.readAsText(file);e.target.value='';});
+$('fileInput').addEventListener('change',function(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const imported=JSON.parse(ev.target.result);if(!Array.isArray(imported)||!imported.length){setStatus('⚠️ 文件格式错误或为空','warning');return;}const merge=confirm(`检测到 ${imported.length} 条记录。\n点击「确定」合并（不覆盖）\n点击「取消」覆盖当前数据`);if(!merge){historyRecords=imported;}else{const set=new Set(historyRecords.map(r=>JSON.stringify(r)));let added=0;imported.forEach(r=>{const k=JSON.stringify(r);if(!set.has(k)){historyRecords.push(r);set.add(k);added++;}});setStatus(`✅ 合并完成，新增 ${added} 条，总计 ${historyRecords.length} 条`,'success');}saveHistory();if($('historyModal').classList.contains('active'))renderHistory();showAlert();pushWatchlist();setStatus(`✅ 数据导入成功，当前共 ${historyRecords.length} 条记录`,'success');}catch(err){setStatus('❌ 导入失败：'+err.message,'error');}};reader.readAsText(file);e.target.value='';});
 
 // ========== 净值到齐提醒（多用户隔离） ==========
 const NOTIFY_ENDPOINT='https://notify.fundpush-ttxs.top';
@@ -1205,6 +1211,53 @@ async function syncWatchlist(){
   }catch(e){/* 静默失败，绝不影响计算器本身 */}
 }
 
+// ===== 云端为唯一数据源：拉取关注列表 + 待结算清单到本地（本地只作缓存） =====
+const CLOUD_INIT_KEY='fund_cloud_init_key';
+function cloudInited(){try{return !!getSendKey()&&localStorage.getItem(CLOUD_INIT_KEY)===getSendKey();}catch(e){return false;}}
+function markCloudInited(){try{localStorage.setItem(CLOUD_INIT_KEY,getSendKey());}catch(e){}}
+function clearCloudInit(){try{localStorage.removeItem(CLOUD_INIT_KEY);}catch(e){}}
+
+// 记录身份键：同基金 + 同买入日 + 同卖出日 + 同金额 + 同交易对象，用于本地与云端对齐去重
+function recId(r){return [r.fundCode||'',r.buyDate||'',r.sellDate||'',String(r.amount||'').trim(),String(r.tradeTarget||'').trim()].join('|');}
+function isUnsettled(r){return !!(r.fundCode&&r.sellDate&&(!r.sellPrice||String(r.sellPrice).trim()===''||String(r.sellPrice).trim()==='—'));}
+// replace=true：本地未结算部分以云端为准（删除可跨设备同步）；false：首次只做并集合并，保本地数据
+async function pullCloud(replace){
+  const key=getSendKey();if(!key)return false;
+  let d;
+  try{const res=await fetch(NOTIFY_ENDPOINT+'/status?key='+encodeURIComponent(key)+'&_='+Date.now());d=await res.json();}catch(e){return false;}
+  if(!d||!d.ok)return false;
+  // 关注列表
+  if(Array.isArray(d.follow)){
+    const cf=d.follow.map(x=>({code:String(x.fund_code||''),name:String(x.fund_name||'')})).filter(x=>/^\d{6}$/.test(x.code));
+    if(replace){followList=cf;}
+    else{const m=new Map(followList.map(f=>[f.code,f]));cf.forEach(f=>{const e=m.get(f.code);if(e){if(f.name)e.name=f.name;}else{m.set(f.code,f);followList.push(f);}});}
+    saveFollowLocal();renderFollow();
+  }
+  // 待结算清单（云端字段 → 本地历史记录结构）
+  // 只做并集合并、不以云端为准删除本地：云端 watchlist 不含已结算记录，
+  // 若按云端删除会把"别的设备已结算"的本地记录误删。A+ 阶段保证绝不丢本地数据。
+  if(Array.isArray(d.watchlist)){
+    const cloud=d.watchlist.map(x=>({fundCode:String(x.fund_code||''),fundName:String(x.fund_name||''),buyDate:String(x.buy_date||''),sellDate:String(x.sell_date||''),tradeType:String(x.trade_type||''),amount:String(x.amount||''),bonusRate:String(x.bonus_rate||''),buyPrice:String(x.buy_price||''),dividendPrice:String(x.dividend_price||''),tradeTarget:String(x.trade_target||''),sellPrice:'',netProfit:'—',returnRate:'—',finalResult:'—',timestamp:''})).filter(x=>/^\d{6}$/.test(x.fundCode)&&/^\d{4}-\d{2}-\d{2}$/.test(x.sellDate));
+    let changed=false;
+    const lIds=new Set(historyRecords.map(recId));
+    cloud.forEach(r=>{const id=recId(r);if(!lIds.has(id)){historyRecords.push(r);lIds.add(id);changed=true;}else{const ex=historyRecords.find(x=>recId(x)===id);if(ex&&r.fundName&&!ex.fundName){ex.fundName=r.fundName;changed=true;}}});
+    if(changed){saveHistory();if($('historyModal').classList.contains('active'))renderHistory();showAlert();}
+  }
+  return true;
+}
+// 统一同步：首次只拉+推（建云端初始数据），后续先拉云端为准再推回，保证删除跨设备一致
+async function syncCloud(){
+  const key=getSendKey();if(!key)return;
+  if(cloudInited()){
+    await pullCloud(true);
+    await syncWatchlist();await syncFollow();
+  }else{
+    await pullCloud(false);
+    await syncWatchlist();await syncFollow();
+    markCloudInited();
+  }
+}
+
 // ===== 关注基金列表 =====
 const FOLLOW_STORAGE='fund_follow_list';
 let followList=[];
@@ -1215,7 +1268,7 @@ function renderFollow(){
   const tbody=$('followTbody');if(!tbody)return;
   if(!followList.length){tbody.innerHTML='<tr><td colspan="3" class="empty-msg">暂无关注，在上方输入基金代码添加</td></tr>';return;}
   tbody.innerHTML=followList.map((f,i)=>'<tr><td class="fm-code">'+f.code+'</td><td>'+(f.name||'—')+'</td><td><button class="del-btn" data-i="'+i+'" title="移除">🗑</button></td></tr>').join('');
-  tbody.querySelectorAll('.del-btn').forEach(el=>el.addEventListener('click',function(){const i=parseInt(this.getAttribute('data-i'),10);if(isFinite(i)&&confirm('移除关注 '+followList[i].code+'？')){followList.splice(i,1);saveFollowLocal();renderFollow();syncFollow();}}));
+  tbody.querySelectorAll('.del-btn').forEach(el=>el.addEventListener('click',function(){const i=parseInt(this.getAttribute('data-i'),10);if(!isFinite(i)||!followList[i])return;const delCode=followList[i].code;if(!confirm('移除关注 '+delCode+'？'))return;const idx=followList.findIndex(f=>f.code===delCode);if(idx>=0)followList.splice(idx,1);saveFollowLocal();renderFollow();syncFollow();}));
 }
 function lookupFollowName(code,cb){
   if(nameCache[code]){cb(nameCache[code]);return;}
@@ -1230,7 +1283,7 @@ function addFollow(){
   if(!/^\d{6}$/.test(code)){setStatus('⚠️ 请输入 6 位基金代码','warning');return;}
   if(followList.some(function(f){return f.code===code;})){setStatus('⚠️ 该基金已在关注列表','warning');inp.value='';return;}
   const item={code:code,name:''};followList.push(item);saveFollowLocal();renderFollow();inp.value='';
-  lookupFollowName(code,function(name){item.name=name;saveFollowLocal();renderFollow();});
+  lookupFollowName(code,function(name){const e=followList.find(function(f){return f.code===code;});if(e){e.name=name;saveFollowLocal();renderFollow();syncFollow();}});
   syncFollow();setStatus('✅ 已关注 '+code+'，净值更新后自动推送','success');
 }
 async function syncFollow(){
@@ -1245,7 +1298,9 @@ function openFollowModal(){
     try{openNotify();}catch(e){}
     return;
   }
-  const m=$('followModal');if(!m)return;renderFollow();m.classList.add('active');document.body.style.overflow='hidden';
+  const m=$('followModal');if(!m)return;
+  m.classList.add('active');document.body.style.overflow='hidden';renderFollow();
+  pullCloud(true).then(function(){renderFollow();}); // 打开时以云端为准刷新
 }
 function closeFollowModal(){const m=$('followModal');if(!m)return;m.classList.remove('active');document.body.style.overflow='';}
 function initFollow(){
@@ -1280,7 +1335,7 @@ $('notifyModal').addEventListener('click',function(e){if(e.target===this){render
 
 // 「净值推送」开关：开 / 关 二选一
 function doDisableNotify(){
-  const key=getSendKey();
+  const key=getSendKey();clearCloudInit();
   if(key){try{return fetch(NOTIFY_ENDPOINT+'/unsub',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_key:key})});}catch(e){}}
   return Promise.resolve();
 }
@@ -1291,8 +1346,8 @@ Array.prototype.forEach.call(document.querySelectorAll('input[name="notifyOn"]')
       setSendKey('');renderNotifySwitch();renderNotifyStatus();
       setStatus('✅ 已关闭净值推送，云端数据已删除','success');
     }else if(this.value==='on'){
-      if(getSendKey()){ // 已配置过 Key，直接开启并刷新清单
-        await Promise.all([syncWatchlist(),syncFollow()]);renderNotifySwitch();
+      if(getSendKey()){ // 已配置过 Key，开启：先从云端拉取再对齐上传
+        await syncCloud();renderNotifySwitch();
         setStatus('✅ 净值推送已开启，今日及未来的待结算项目都会进入监控','success');
       }else{ // 首次开启，弹窗引导填写 SendKey
         openNotify();
@@ -1303,9 +1358,9 @@ Array.prototype.forEach.call(document.querySelectorAll('input[name="notifyOn"]')
 $('saveNotify').addEventListener('click',async function(){
   const k=$('sendKeyInput').value.trim();
   if(!/^SCT[A-Za-z0-9]{8,}$/.test(k)&&k.length<10){setStatus('❌ Key 格式不对，应填 SCT 开头的 SendKey','error');return;}
-  setSendKey(k);
-  this.disabled=true;this.textContent='⏳ 正在开启...';
-  await Promise.all([syncWatchlist(),syncFollow()]);
+  setSendKey(k);clearCloudInit();
+  this.disabled=true;this.textContent='⏳ 正在同步云端数据...';
+  await syncCloud();
   this.disabled=false;this.textContent='💾 保存并开启';
   renderNotifyStatus();renderNotifySwitch();
   setStatus('✅ 净值推送已开启，今日及未来的待结算项目都会进入监控','success');
@@ -1325,7 +1380,7 @@ $('updateOk').addEventListener('click',closeUpdateNote);
 window.addEventListener('DOMContentLoaded',function(){
   let seen=true;try{seen=!!localStorage.getItem(UPDATE_NOTE_KEY);}catch(e){}
   if(!seen)setTimeout(showUpdateNote,600);
-  renderNotifySwitch();initFollow();setTimeout(function(){if(getSendKey()){syncWatchlist();syncFollow();}},1200);
+  renderNotifySwitch();initFollow();setTimeout(function(){if(getSendKey()){syncCloud();}},1200);
 });
 
 // 同步链接
